@@ -113,7 +113,7 @@ macro_rules! assert_scalar_eq {
                 // hence we build the panic message in code, but panic here.
                 panic!("{msg}
 Please see the documentation for ways to compare scalars approximately.\n\n",
-                    msg = msg.trim_right());
+                    msg = msg.trim_end());
             }
         }
     };
