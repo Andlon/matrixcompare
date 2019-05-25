@@ -1,14 +1,10 @@
-use matrix::BaseMatrix;
-
 use std::fmt;
 
-use macros::ElementwiseComparator;
-
-use macros::comparison::ComparisonFailure;
+use crate::{ElementwiseComparator, Matrix};
+use crate::comparison::ComparisonFailure;
 
 const MAX_MISMATCH_REPORTS: usize = 12;
 
-#[doc(hidden)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct MatrixElementComparisonFailure<T, E> where E: ComparisonFailure {
     pub x: T,
@@ -35,7 +31,6 @@ impl<T, E> fmt::Display for MatrixElementComparisonFailure<T, E>
     }
 }
 
-#[doc(hidden)]
 #[derive(Debug, PartialEq)]
 pub enum MatrixComparisonResult<T, C, E>
     where T: Copy,
@@ -72,7 +67,7 @@ impl<T, C, E> MatrixComparisonResult<T, C, E>
                 }
 
                 // Strip off the last newline from the above
-                formatted_mismatches = formatted_mismatches.trim_right().to_string();
+                formatted_mismatches = formatted_mismatches.trim_end().to_string();
 
                 Some(format!("\n
 Matrices X and Y have {num} mismatched element pairs.
@@ -102,24 +97,22 @@ Dimensions of matrices X and Y do not match.
     }
 }
 
-#[doc(hidden)]
-pub fn elementwise_matrix_comparison<T, M, C, E>(x: &M, y: &M, comparator: C)
+pub fn elementwise_matrix_comparison<T, M, C, E>(x: M, y: M, comparator: C)
     -> MatrixComparisonResult<T, C, E>
-    where M: BaseMatrix<T>, T: Copy, C: ElementwiseComparator<T, E>, E: ComparisonFailure {
+    where M: Matrix<T>, T: Copy, C: ElementwiseComparator<T, E>, E: ComparisonFailure
+{
     if x.rows() == y.rows() && x.cols() == y.cols() {
         let mismatches = {
             let mut mismatches = Vec::new();
-            let x = x.as_slice();
-            let y = y.as_slice();
             for i in 0 .. x.rows() {
                 for j in 0 .. x.cols() {
-                    let a = x[[i, j]].to_owned();
-                    let b = y[[i, j]].to_owned();
+                    let a = x.get(i, j);
+                    let b = y.get(i, j);
                     if let Err(error) = comparator.compare(a, b) {
                         mismatches.push(MatrixElementComparisonFailure {
                             x: a,
                             y: b,
-                            error: error,
+                            error,
                             row: i,
                             col: j
                         });
@@ -133,8 +126,8 @@ pub fn elementwise_matrix_comparison<T, M, C, E>(x: &M, y: &M, comparator: C)
             MatrixComparisonResult::Match
         } else {
             MatrixComparisonResult::MismatchedElements {
-                comparator: comparator,
-                mismatches: mismatches
+                comparator,
+                mismatches
             }
         }
     } else {
@@ -332,26 +325,26 @@ macro_rules! assert_matrix_eq {
             // Note: The reason we take slices of both x and y is that if x or y are passed as references,
             // we don't attempt to call elementwise_matrix_comparison with a &&BaseMatrix type (double reference),
             // which does not work due to generics.
-            use $crate::macros::{elementwise_matrix_comparison, ExactElementwiseComparator};
-            use $crate::matrix::BaseMatrix;
+            use $crate::{elementwise_matrix_comparison, ExactElementwiseComparator};
+            
             let comp = ExactElementwiseComparator;
-            let msg = elementwise_matrix_comparison(&$x.as_slice(), &$y.as_slice(), comp).panic_message();
+            let msg = elementwise_matrix_comparison(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 // Note: We need the panic to incur here inside of the macro in order
                 // for the line number to be correct when using it for tests,
                 // hence we build the panic message in code, but panic here.
                 panic!("{msg}
 Please see the documentation for ways to compare matrices approximately.\n\n",
-                    msg = msg.trim_right());
+                    msg = msg.trim_end());
             }
         }
     };
     ($x:expr, $y:expr, comp = exact) => {
         {
-            use $crate::macros::{elementwise_matrix_comparison, ExactElementwiseComparator};
-            use $crate::matrix::BaseMatrix;
+            use $crate::{elementwise_matrix_comparison, ExactElementwiseComparator};
+            
             let comp = ExactElementwiseComparator;
-            let msg = elementwise_matrix_comparison(&$x.as_slice(), &$y.as_slice(), comp).panic_message();
+            let msg = elementwise_matrix_comparison(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -359,10 +352,10 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = abs, tol = $tol:expr) => {
         {
-            use $crate::macros::{elementwise_matrix_comparison, AbsoluteElementwiseComparator};
-            use $crate::matrix::BaseMatrix;
+            use $crate::{elementwise_matrix_comparison, AbsoluteElementwiseComparator};
+            
             let comp = AbsoluteElementwiseComparator { tol: $tol };
-            let msg = elementwise_matrix_comparison(&$x.as_slice(), &$y.as_slice(), comp).panic_message();
+            let msg = elementwise_matrix_comparison(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -370,10 +363,10 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = ulp, tol = $tol:expr) => {
         {
-            use $crate::macros::{elementwise_matrix_comparison, UlpElementwiseComparator};
-            use $crate::matrix::BaseMatrix;
+            use $crate::{elementwise_matrix_comparison, UlpElementwiseComparator};
+            
             let comp = UlpElementwiseComparator { tol: $tol };
-            let msg = elementwise_matrix_comparison(&$x.as_slice(), &$y.as_slice(), comp).panic_message();
+            let msg = elementwise_matrix_comparison(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -381,10 +374,10 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = float) => {
         {
-            use $crate::macros::{elementwise_matrix_comparison, FloatElementwiseComparator};
-            use $crate::matrix::BaseMatrix;
+            use $crate::{elementwise_matrix_comparison, FloatElementwiseComparator};
+            
             let comp = FloatElementwiseComparator::default();
-            let msg = elementwise_matrix_comparison(&$x.as_slice(), &$y.as_slice(), comp).panic_message();
+            let msg = elementwise_matrix_comparison(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -394,10 +387,10 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
     // used in the default float comparator.
     ($x:expr, $y:expr, comp = float, $($key:ident = $val:expr),+) => {
         {
-            use $crate::macros::{elementwise_matrix_comparison, FloatElementwiseComparator};
-            use $crate::matrix::BaseMatrix;
+            use $crate::{elementwise_matrix_comparison, FloatElementwiseComparator};
+            
             let comp = FloatElementwiseComparator::default()$(.$key($val))+;
-            let msg = elementwise_matrix_comparison(&$x.as_slice(), &$y.as_slice(), comp).panic_message();
+            let msg = elementwise_matrix_comparison(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -411,11 +404,11 @@ mod tests {
         elementwise_matrix_comparison,
         MatrixComparisonResult
     };
-    use macros::comparison::{
+    use crate::comparison::{
         ExactElementwiseComparator, ExactError
     };
-    use matrix::Matrix;
     use quickcheck::TestResult;
+    use crate::mock::MockDenseMatrix;
 
     quickcheck! {
         fn property_elementwise_comparison_incompatible_matrices_yield_dimension_mismatch(
@@ -429,8 +422,8 @@ mod tests {
 
             // It does not actually matter which comparator we use here, but we need to pick one
             let comp = ExactElementwiseComparator;
-            let ref x = Matrix::new(m, n, vec![0; m * n]);
-            let ref y = Matrix::new(p, q, vec![0; p * q]);
+            let ref x = MockDenseMatrix::from_row_major(m, n, vec![0; m * n]);
+            let ref y = MockDenseMatrix::from_row_major(p, q, vec![0; p * q]);
 
             let expected = MatrixComparisonResult::MismatchedDimensions { dim_x: (m, n), dim_y: (p, q) };
 
@@ -441,7 +434,7 @@ mod tests {
     quickcheck! {
         fn property_elementwise_comparison_matrix_matches_self(m: usize, n: usize) -> bool {
             let comp = ExactElementwiseComparator;
-            let ref x = Matrix::new(m, n, vec![0; m * n]);
+            let ref x = MockDenseMatrix::from_row_major(m, n, vec![0; m * n]);
 
             elementwise_matrix_comparison(x, x, comp) == MatrixComparisonResult::Match
         }
@@ -456,8 +449,8 @@ mod tests {
 
         {
             // Single element matrices
-            let ref x = matrix![1];
-            let ref y = matrix![2];
+            let ref x = MockDenseMatrix::from_row_major(1, 1, vec![1]);
+            let ref y = MockDenseMatrix::from_row_major(1, 1, vec![2]);
 
             let expected = MismatchedElements {
                 comparator: comp,
@@ -473,10 +466,10 @@ mod tests {
 
         {
             // Mismatch in top-left and bottom-corner elements for a short matrix
-            let ref x = matrix![0, 1, 2;
-                                3, 4, 5];
-            let ref y = matrix![1, 1, 2;
-                                3, 4, 6];
+            let ref x = MockDenseMatrix::from_row_major(2, 3, vec![0, 1, 2,
+                                3, 4, 5]) ;
+            let ref y = MockDenseMatrix::from_row_major(2, 3, vec![1, 1, 2,
+                                3, 4, 6]) ;
             let mismatches = vec![
                 MatrixElementComparisonFailure {
                     x: 0, y: 1,
@@ -500,12 +493,12 @@ mod tests {
 
         {
             // Mismatch in top-left and bottom-corner elements for a tall matrix
-            let ref x = matrix![0, 1;
-                                2, 3;
-                                4, 5];
-            let ref y = matrix![1, 1;
-                                2, 3;
-                                4, 6];
+            let ref x = MockDenseMatrix::from_row_major(3, 2, vec![0, 1,
+                                2, 3,
+                                4, 5]) ;
+            let ref y = MockDenseMatrix::from_row_major(3, 2, vec![1, 1,
+                                2, 3,
+                                4, 6]) ;
             let mismatches = vec![
                 MatrixElementComparisonFailure {
                     x: 0, y: 1,
@@ -529,10 +522,10 @@ mod tests {
 
         {
             // Check some arbitrary elements
-            let ref x = matrix![0, 1, 2, 3;
-                                4, 5, 6, 7];
-            let ref y = matrix![0, 1, 3, 3;
-                                4, 6, 6, 7];
+            let ref x = MockDenseMatrix::from_row_major(2, 4, vec![0, 1, 2, 3,
+                                4, 5, 6, 7]) ;
+            let ref y = MockDenseMatrix::from_row_major(2, 4, vec![0, 1, 3, 3,
+                                4, 6, 6, 7]) ;
 
             let mismatches = vec![
                 MatrixElementComparisonFailure {
@@ -558,80 +551,80 @@ mod tests {
 
     #[test]
     pub fn matrix_eq_absolute_compare_self_for_integer() {
-        let x = matrix![1, 2, 3;
-                        4, 5, 6];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1, 2, 3,
+                        4, 5, 6]) ;
         assert_matrix_eq!(x, x, comp = abs, tol = 0);
     }
 
     #[test]
     pub fn matrix_eq_absolute_compare_self_for_floating_point() {
-        let x = matrix![1.0, 2.0, 3.0;
-                        4.0, 5.0, 6.0];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1.0, 2.0, 3.0,
+                        4.0, 5.0, 6.0]) ;
         assert_matrix_eq!(x, x, comp = abs, tol = 1e-10);
     }
 
     #[test]
     #[should_panic]
     pub fn matrix_eq_absolute_mismatched_dimensions() {
-        let x = matrix![1, 2, 3;
-                        4, 5, 6];
-        let y = matrix![1, 2;
-                        3, 4];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1, 2, 3,
+                        4, 5, 6]) ;
+        let y = MockDenseMatrix::from_row_major(2, 3, vec![1, 2,
+                        3, 4]) ;
         assert_matrix_eq!(x, y, comp = abs, tol = 0);
     }
 
     #[test]
     #[should_panic]
     pub fn matrix_eq_absolute_mismatched_floating_point_elements() {
-        let x = matrix![1.00,  2.00,  3.00;
-                        4.00,  5.00,  6.00];
-        let y = matrix![1.00,  2.01,  3.00;
-                        3.99,  5.00,  6.00];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1.00,  2.00,  3.00,
+                        4.00,  5.00,  6.00]) ;
+        let y = MockDenseMatrix::from_row_major(2, 3, vec![1.00,  2.01,  3.00,
+                        3.99,  5.00,  6.00]) ;
         assert_matrix_eq!(x, y, comp = abs, tol = 1e-10);
     }
 
     #[test]
     pub fn matrix_eq_exact_compare_self_for_integer() {
-        let x = matrix![1, 2, 3;
-                        4, 5, 6];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1, 2, 3,
+                        4, 5, 6]) ;
         assert_matrix_eq!(x, x, comp = exact);
     }
 
     #[test]
     pub fn matrix_eq_exact_compare_self_for_floating_point() {
-        let x = matrix![1.0, 2.0, 3.0;
-                        4.0, 5.0, 6.0];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1.0, 2.0, 3.0,
+                        4.0, 5.0, 6.0]) ;
         assert_matrix_eq!(x, x, comp = exact);
     }
 
     #[test]
     pub fn matrix_eq_ulp_compare_self() {
-        let x = matrix![1.0, 2.0, 3.0;
-                        4.0, 5.0, 6.0];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1.0, 2.0, 3.0,
+                        4.0, 5.0, 6.0]) ;
         assert_matrix_eq!(x, x, comp = ulp, tol = 0);
     }
 
     #[test]
     pub fn matrix_eq_default_compare_self_for_floating_point() {
-        let x = matrix![1.0, 2.0, 3.0;
-                        4.0, 5.0, 6.0];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1.0, 2.0, 3.0,
+                        4.0, 5.0, 6.0]) ;
         assert_matrix_eq!(x, x);
     }
 
     #[test]
     pub fn matrix_eq_default_compare_self_for_integer() {
-        let x = matrix![1, 2, 3;
-                        4, 5, 6];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1, 2, 3,
+                        4, 5, 6]) ;
         assert_matrix_eq!(x, x);
     }
 
     #[test]
     #[should_panic]
     pub fn matrix_eq_ulp_different_signs() {
-        let x = matrix![1.0, 2.0, 3.0;
-                        4.0, 5.0, 6.0];
-        let y = matrix![1.0, 2.0, -3.0;
-                        4.0, 5.0, 6.0];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1.0, 2.0, 3.0,
+                        4.0, 5.0, 6.0]) ;
+        let y = MockDenseMatrix::from_row_major(2, 3, vec![1.0, 2.0, -3.0,
+                        4.0, 5.0, 6.0]) ;
         assert_matrix_eq!(x, y, comp = ulp, tol = 0);
     }
 
@@ -639,38 +632,38 @@ mod tests {
     #[should_panic]
     pub fn matrix_eq_ulp_nan() {
         use std::f64;
-        let x = matrix![1.0, 2.0, 3.0;
-                        4.0, 5.0, 6.0];
-        let y = matrix![1.0, 2.0, f64::NAN;
-                        4.0, 5.0, 6.0];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1.0, 2.0, 3.0,
+                        4.0, 5.0, 6.0]) ;
+        let y = MockDenseMatrix::from_row_major(2, 3, vec![1.0, 2.0, f64::NAN,
+                        4.0, 5.0, 6.0]);
         assert_matrix_eq!(x, y, comp = ulp, tol = 0);
     }
 
     #[test]
     pub fn matrix_eq_float_compare_self() {
-        let x = matrix![1.0, 2.0, 3.0;
-                        4.0, 5.0, 6.0];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1.0, 2.0, 3.0,
+                        4.0, 5.0, 6.0]) ;
         assert_matrix_eq!(x, x, comp = float);
     }
 
     #[test]
     pub fn matrix_eq_float_compare_self_with_eps() {
-        let x = matrix![1.0, 2.0, 3.0;
-                        4.0, 5.0, 6.0];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1.0, 2.0, 3.0,
+                        4.0, 5.0, 6.0]) ;
         assert_matrix_eq!(x, x, comp = float, eps = 1e-6);
     }
 
     #[test]
     pub fn matrix_eq_float_compare_self_with_ulp() {
-        let x = matrix![1.0, 2.0, 3.0;
-                        4.0, 5.0, 6.0];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1.0, 2.0, 3.0,
+                        4.0, 5.0, 6.0]) ;
         assert_matrix_eq!(x, x, comp = float, ulp = 12);
     }
 
     #[test]
     pub fn matrix_eq_float_compare_self_with_eps_and_ulp() {
-        let x = matrix![1.0, 2.0, 3.0;
-                        4.0, 5.0, 6.0];
+        let x = MockDenseMatrix::from_row_major(2, 3, vec![1.0, 2.0, 3.0,
+                        4.0, 5.0, 6.0]) ;
         assert_matrix_eq!(x, x, comp = float, eps = 1e-6, ulp = 12);
         assert_matrix_eq!(x, x, comp = float, ulp = 12, eps = 1e-6);
     }
@@ -678,7 +671,7 @@ mod tests {
     #[test]
     pub fn matrix_eq_pass_by_ref()
     {
-        let x = matrix![0.0f64];
+        let x = MockDenseMatrix::from_row_major(1, 1, vec![0.0f64]);
 
         // Exercise all the macro definitions and make sure that we are able to call it
         // when the arguments are references.

@@ -18,12 +18,10 @@ pub trait ElementwiseComparator<T, E> where T: Copy, E: ComparisonFailure {
     fn description(&self) -> String;
 }
 
-#[doc(hidden)]
 pub trait ComparisonFailure {
     fn failure_reason(&self) -> Option<String>;
 }
 
-#[doc(hidden)]
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct AbsoluteError<T>(pub T);
 
@@ -73,7 +71,6 @@ impl<T> ElementwiseComparator<T, AbsoluteError<T>> for AbsoluteElementwiseCompar
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct ExactElementwiseComparator;
 
-#[doc(hidden)]
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct ExactError;
 
@@ -104,7 +101,6 @@ pub struct UlpElementwiseComparator {
     pub tol: u64
 }
 
-#[doc(hidden)]
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct UlpError(pub UlpComparisonResult);
 
@@ -145,7 +141,6 @@ pub struct FloatElementwiseComparator<T> {
     ulp: UlpElementwiseComparator
 }
 
-#[doc(hidden)]
 #[allow(dead_code)]
 impl<T> FloatElementwiseComparator<T> where T: Float + Ulp {
     pub fn default() -> Self {
