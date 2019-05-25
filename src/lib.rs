@@ -4,8 +4,8 @@
 //#[macro_use]
 //mod assert_vector_eq;
 //
-//#[macro_use]
-//mod assert_scalar_eq;
+#[macro_use]
+mod assert_scalar_eq;
 
 #[cfg(test)]
 #[macro_use]
@@ -20,11 +20,11 @@ pub use self::comparison::{
     UlpElementwiseComparator,
     FloatElementwiseComparator,
 
-    // The following are just imported because we want to
+    // The following is just imported because we want to
     // expose trait bounds in the documentation
     ElementwiseComparator
 };
 
 //pub use self::assert_matrix_eq::elementwise_matrix_comparison;
 //pub use self::assert_vector_eq::elementwise_vector_comparison;
-//pub use self::assert_scalar_eq::scalar_comparison;
+pub use self::assert_scalar_eq::scalar_comparison;

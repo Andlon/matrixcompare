@@ -1,7 +1,7 @@
 use std::fmt;
 
-use macros::ElementwiseComparator;
-use macros::comparison::ComparisonFailure;
+use crate::ElementwiseComparator;
+use crate::comparison::ComparisonFailure;
 
 
 #[doc(hidden)]
@@ -93,7 +93,7 @@ pub fn scalar_comparison<T, C, E>(x: T, y: T, comparator: C)
 /// # Examples
 ///
 /// ```
-/// # #[macro_use] extern crate rulinalg; fn main() {
+/// # #[macro_use] extern crate assert_matrix_eq; fn main() {
 /// let x = 3.00;
 /// let y = 3.05;
 /// // Assert that |x - y| <= 0.1
@@ -104,7 +104,7 @@ pub fn scalar_comparison<T, C, E>(x: T, y: T, comparator: C)
 macro_rules! assert_scalar_eq {
     ($x:expr, $y:expr) => {
         {
-            use $crate::macros::{scalar_comparison, ExactElementwiseComparator};
+            use $crate::{scalar_comparison, ExactElementwiseComparator};
             let comp = ExactElementwiseComparator;
             let msg = scalar_comparison($x.clone(), $y.clone(), comp).panic_message();
             if let Some(msg) = msg {
@@ -119,7 +119,7 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = exact) => {
         {
-            use $crate::macros::{scalar_comparison, ExactElementwiseComparator};
+            use $crate::{scalar_comparison, ExactElementwiseComparator};
             let comp = ExactElementwiseComparator;
             let msg = scalar_comparison($x.clone(), $y.clone(), comp).panic_message();
             if let Some(msg) = msg {
@@ -129,7 +129,7 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = abs, tol = $tol:expr) => {
         {
-            use $crate::macros::{scalar_comparison, AbsoluteElementwiseComparator};
+            use $crate::{scalar_comparison, AbsoluteElementwiseComparator};
             let comp = AbsoluteElementwiseComparator { tol: $tol };
             let msg = scalar_comparison($x.clone(), $y.clone(), comp).panic_message();
             if let Some(msg) = msg {
@@ -139,7 +139,7 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = ulp, tol = $tol:expr) => {
         {
-            use $crate::macros::{scalar_comparison, UlpElementwiseComparator};
+            use $crate::{scalar_comparison, UlpElementwiseComparator};
             let comp = UlpElementwiseComparator { tol: $tol };
             let msg = scalar_comparison($x.clone(), $y.clone(), comp).panic_message();
             if let Some(msg) = msg {
@@ -149,7 +149,7 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = float) => {
         {
-            use $crate::macros::{scalar_comparison, FloatElementwiseComparator};
+            use $crate::{scalar_comparison, FloatElementwiseComparator};
             let comp = FloatElementwiseComparator::default();
             let msg = scalar_comparison($x.clone(), $y.clone(), comp).panic_message();
             if let Some(msg) = msg {
@@ -161,7 +161,7 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     // used in the default float comparator.
     ($x:expr, $y:expr, comp = float, $($key:ident = $val:expr),+) => {
         {
-            use $crate::macros::{scalar_comparison, FloatElementwiseComparator};
+            use $crate::{scalar_comparison, FloatElementwiseComparator};
             let comp = FloatElementwiseComparator::default()$(.$key($val))+;
             let msg = scalar_comparison($x.clone(), $y.clone(), comp).panic_message();
             if let Some(msg) = msg {
@@ -174,7 +174,7 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
 #[cfg(test)]
 mod tests {
     use super::scalar_comparison;
-    use macros::comparison::{
+    use crate::comparison::{
         ExactElementwiseComparator, ExactError
     };
 
