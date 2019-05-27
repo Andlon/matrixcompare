@@ -1,70 +1,86 @@
 use std::fmt;
 
-use crate::ElementwiseComparator;
 use crate::comparison::ComparisonFailure;
-
+use crate::ElementwiseComparator;
 
 #[doc(hidden)]
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct ScalarComparisonFailure<T, E> where E: ComparisonFailure {
+pub struct ScalarComparisonFailure<T, E>
+where
+    E: ComparisonFailure,
+{
     pub x: T,
     pub y: T,
-    pub error: E
+    pub error: E,
 }
 
 impl<T, E> fmt::Display for ScalarComparisonFailure<T, E>
-    where T: fmt::Display, E: ComparisonFailure {
+where
+    T: fmt::Display,
+    E: ComparisonFailure,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
-               "x = {x}, y = {y}.{reason}",
-               x = self.x,
-               y = self.y,
-               reason = self.error.failure_reason()
-                                  // Add a space before the reason
-                                  .map(|s| format!(" {}", s))
-                                  .unwrap_or(String::new()))
+        write!(
+            f,
+            "x = {x}, y = {y}.{reason}",
+            x = self.x,
+            y = self.y,
+            reason = self
+                .error
+                .failure_reason()
+                // Add a space before the reason
+                .map(|s| format!(" {}", s))
+                .unwrap_or(String::new())
+        )
     }
 }
 
 #[doc(hidden)]
 #[derive(Debug, PartialEq)]
 pub enum ScalarComparisonResult<T, C, E>
-    where C: ElementwiseComparator<T, E>,
-          E: ComparisonFailure
+where
+    C: ElementwiseComparator<T, E>,
+    E: ComparisonFailure,
 {
     Match,
     Mismatch {
         comparator: C,
-        mismatch: ScalarComparisonFailure<T, E>
-    }
+        mismatch: ScalarComparisonFailure<T, E>,
+    },
 }
 
-impl <T, C, E> ScalarComparisonResult<T, C, E>
-    where T: fmt::Display, C: ElementwiseComparator<T, E>, E: ComparisonFailure {
+impl<T, C, E> ScalarComparisonResult<T, C, E>
+where
+    T: fmt::Display,
+    C: ElementwiseComparator<T, E>,
+    E: ComparisonFailure,
+{
     pub fn panic_message(&self) -> Option<String> {
         match self {
-            &ScalarComparisonResult::Mismatch { ref comparator, ref mismatch } => {
-                Some(format!("\n
+            &ScalarComparisonResult::Mismatch {
+                ref comparator,
+                ref mismatch,
+            } => Some(format!(
+                "\n
 Scalars x and y do not compare equal.
 
 {mismatch}
 
 Comparison criterion: {description}
 \n",
-                    description = comparator.description(),
-                    mismatch = mismatch.to_string()
-                ))
-            },
-            _ => None
+                description = comparator.description(),
+                mismatch = mismatch.to_string()
+            )),
+            _ => None,
         }
     }
 }
 
-pub fn scalar_comparison<T, C, E>(x: &T, y: &T, comparator: C)
-    -> ScalarComparisonResult<T, C, E>
-    where T: Clone,
-          C: ElementwiseComparator<T, E>,
-          E: ComparisonFailure
+pub fn scalar_comparison<T, C, E>(x: &T, y: &T, comparator: C) -> ScalarComparisonResult<T, C, E>
+where
+    T: Clone,
+    C: ElementwiseComparator<T, E>,
+    E: ComparisonFailure,
 {
     match comparator.compare(x, y) {
         Err(error) => ScalarComparisonResult::Mismatch {
@@ -72,10 +88,10 @@ pub fn scalar_comparison<T, C, E>(x: &T, y: &T, comparator: C)
             mismatch: ScalarComparisonFailure {
                 x: x.clone(),
                 y: y.clone(),
-                error
-            }
+                error,
+            },
         },
-        _ => ScalarComparisonResult::Match
+        _ => ScalarComparisonResult::Match,
     }
 }
 
@@ -172,14 +188,12 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
 #[cfg(test)]
 mod tests {
     use super::scalar_comparison;
-    use crate::comparison::{
-        ExactElementwiseComparator, ExactError
-    };
+    use crate::comparison::{ExactElementwiseComparator, ExactError};
 
     #[test]
     fn scalar_comparison_reports_correct_mismatch() {
-        use super::ScalarComparisonResult::Mismatch;
         use super::ScalarComparisonFailure;
+        use super::ScalarComparisonResult::Mismatch;
 
         let comp = ExactElementwiseComparator;
 
@@ -190,9 +204,10 @@ mod tests {
             let expected = Mismatch {
                 comparator: comp,
                 mismatch: ScalarComparisonFailure {
-                    x: 0.2, y: 0.3,
-                    error: ExactError
-                }
+                    x: 0.2,
+                    y: 0.3,
+                    error: ExactError,
+                },
             };
 
             assert_eq!(scalar_comparison(&x, &y, comp), expected);
@@ -307,8 +322,7 @@ mod tests {
     }
 
     #[test]
-    pub fn scalar_eq_pass_by_ref()
-    {
+    pub fn scalar_eq_pass_by_ref() {
         let x = 0.0;
 
         // Exercise all the macro definitions and make sure that we are able to call it

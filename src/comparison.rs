@@ -1,6 +1,6 @@
 use crate::ulp::{Ulp, UlpComparisonResult};
 
-use num::{Num, Float};
+use num::{Float, Num};
 
 use std::fmt;
 
@@ -8,7 +8,10 @@ use std::fmt;
 ///
 /// Usually you should not need to interface with this trait directly. It is a part of the documentation
 /// only so that the trait bounds for the comparators are made public.
-pub trait ElementwiseComparator<T, E> where E: ComparisonFailure {
+pub trait ElementwiseComparator<T, E>
+where
+    E: ComparisonFailure,
+{
     /// Compares two elements.
     ///
     /// Returns the error associated with the comparison if it failed.
@@ -29,20 +32,22 @@ pub struct AbsoluteError<T>(pub T);
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct AbsoluteElementwiseComparator<T> {
     /// The maximum absolute difference tolerated (inclusive).
-    pub tol: T
+    pub tol: T,
 }
 
-impl<T> ComparisonFailure for AbsoluteError<T> where T: fmt::Display {
+impl<T> ComparisonFailure for AbsoluteError<T>
+where
+    T: fmt::Display,
+{
     fn failure_reason(&self) -> Option<String> {
-        Some(
-            format!("Absolute error: {error}.", error = self.0)
-        )
+        Some(format!("Absolute error: {error}.", error = self.0))
     }
 }
 
 impl<T> ElementwiseComparator<T, AbsoluteError<T>> for AbsoluteElementwiseComparator<T>
-    where T: Clone + fmt::Display + Num + PartialOrd<T> {
-
+where
+    T: Clone + fmt::Display + Num + PartialOrd<T>,
+{
     fn compare(&self, a: &T, b: &T) -> Result<(), AbsoluteError<T>> {
         assert!(self.tol >= T::zero());
 
@@ -53,7 +58,11 @@ impl<T> ElementwiseComparator<T, AbsoluteError<T>> for AbsoluteElementwiseCompar
         if a == b {
             Ok(())
         } else {
-            let distance = if a > b { a.clone() - b.clone() } else { b.clone() - a.clone() };
+            let distance = if a > b {
+                a.clone() - b.clone()
+            } else {
+                b.clone() - a.clone()
+            };
             if distance <= self.tol {
                 Ok(())
             } else {
@@ -75,12 +84,15 @@ pub struct ExactElementwiseComparator;
 pub struct ExactError;
 
 impl ComparisonFailure for ExactError {
-    fn failure_reason(&self) -> Option<String> { None }
+    fn failure_reason(&self) -> Option<String> {
+        None
+    }
 }
 
 impl<T> ElementwiseComparator<T, ExactError> for ExactElementwiseComparator
-    where T: fmt::Display + PartialEq<T> {
-
+where
+    T: fmt::Display + PartialEq<T>,
+{
     fn compare(&self, a: &T, b: &T) -> Result<(), ExactError> {
         if a == b {
             Ok(())
@@ -98,7 +110,7 @@ impl<T> ElementwiseComparator<T, ExactError> for ExactElementwiseComparator
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct UlpElementwiseComparator {
     /// The maximum difference in ULP units tolerated (inclusive).
-    pub tol: u64
+    pub tol: u64,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -107,30 +119,35 @@ pub struct UlpError(pub UlpComparisonResult);
 impl ComparisonFailure for UlpError {
     fn failure_reason(&self) -> Option<String> {
         match self.0 {
-            UlpComparisonResult::Difference(diff) =>
-                Some(format!("Difference: {diff} ULP.", diff=diff)),
-            UlpComparisonResult::IncompatibleSigns =>
-                Some(format!("Numbers have incompatible signs.")),
-            _ => None
+            UlpComparisonResult::Difference(diff) => {
+                Some(format!("Difference: {diff} ULP.", diff = diff))
+            }
+            UlpComparisonResult::IncompatibleSigns => {
+                Some(format!("Numbers have incompatible signs."))
+            }
+            _ => None,
         }
     }
 }
 
 impl<T> ElementwiseComparator<T, UlpError> for UlpElementwiseComparator
-    where T: Ulp {
-
+where
+    T: Ulp,
+{
     fn compare(&self, a: &T, b: &T) -> Result<(), UlpError> {
         let diff = Ulp::ulp_diff(a, b);
         match diff {
             UlpComparisonResult::ExactMatch => Ok(()),
             UlpComparisonResult::Difference(diff) if diff <= self.tol => Ok(()),
-            _ => Err(UlpError(diff))
+            _ => Err(UlpError(diff)),
         }
     }
 
     fn description(&self) -> String {
-        format!("ULP difference less than or equal to {tol}. See documentation for details.",
-                tol = self.tol)
+        format!(
+            "ULP difference less than or equal to {tol}. See documentation for details.",
+            tol = self.tol
+        )
     }
 }
 
@@ -138,35 +155,40 @@ impl<T> ElementwiseComparator<T, UlpError> for UlpElementwiseComparator
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct FloatElementwiseComparator<T> {
     abs: AbsoluteElementwiseComparator<T>,
-    ulp: UlpElementwiseComparator
+    ulp: UlpElementwiseComparator,
 }
 
 #[allow(dead_code)]
-impl<T> FloatElementwiseComparator<T> where T: Float + Ulp {
+impl<T> FloatElementwiseComparator<T>
+where
+    T: Float + Ulp,
+{
     pub fn default() -> Self {
         FloatElementwiseComparator {
             abs: AbsoluteElementwiseComparator { tol: T::epsilon() },
-            ulp: UlpElementwiseComparator { tol: 4 }
+            ulp: UlpElementwiseComparator { tol: 4 },
         }
     }
 
     pub fn eps(self, eps: T) -> Self {
         FloatElementwiseComparator {
             abs: AbsoluteElementwiseComparator { tol: eps },
-            ulp: self.ulp
+            ulp: self.ulp,
         }
     }
 
     pub fn ulp(self, max_ulp: u64) -> Self {
         FloatElementwiseComparator {
             abs: self.abs,
-            ulp: UlpElementwiseComparator { tol: max_ulp }
+            ulp: UlpElementwiseComparator { tol: max_ulp },
         }
     }
 }
 
 impl<T> ElementwiseComparator<T, UlpError> for FloatElementwiseComparator<T>
-    where T: Ulp + Float + fmt::Display {
+where
+    T: Ulp + Float + fmt::Display,
+{
     fn compare(&self, a: &T, b: &T) -> Result<(), UlpError> {
         // First perform an absolute comparison with a presumably very small epsilon tolerance
         if let Err(_) = self.abs.compare(a, b) {
@@ -174,18 +196,20 @@ impl<T> ElementwiseComparator<T, UlpError> for FloatElementwiseComparator<T>
             self.ulp.compare(a, b)
         } else {
             // If the epsilon comparison succeeds, we have a match
-             Ok(())
+            Ok(())
         }
     }
 
     fn description(&self) -> String {
-        format!("
+        format!(
+            "
 Epsilon-sized absolute comparison, followed by an ULP-based comparison.
 Please see the documentation for details.
 Epsilon:       {eps}
 ULP tolerance: {ulp}",
             eps = self.abs.tol,
-            ulp = self.ulp.tol)
+            ulp = self.ulp.tol
+        )
     }
 }
 
@@ -193,13 +217,12 @@ ULP tolerance: {ulp}",
 mod tests {
     use crate::comparison::{
         AbsoluteElementwiseComparator, AbsoluteError, ElementwiseComparator,
-        ExactElementwiseComparator, ExactError,
+        ExactElementwiseComparator, ExactError, FloatElementwiseComparator,
         UlpElementwiseComparator, UlpError,
-        FloatElementwiseComparator,
     };
     use crate::ulp::{Ulp, UlpComparisonResult};
-    use std::f64;
     use quickcheck::TestResult;
+    use std::f64;
 
     /// Returns the next adjacent floating point number (in the direction of positive infinity)
     fn next_f64(x: f64) -> f64 {
@@ -338,9 +361,18 @@ mod tests {
 
         assert_eq!(comp.compare(&0.0, &0.0), Ok(()));
         assert_eq!(comp.compare(&0.0, &-0.0), Ok(()));
-        assert_eq!(comp.compare(&-1.0, &1.0), Err(UlpError(UlpComparisonResult::IncompatibleSigns)));
-        assert_eq!(comp.compare(&1.0, &0.0), Err(UlpError(f64::ulp_diff(&1.0, &0.0))));
-        assert_eq!(comp.compare(&f64::NAN, &0.0), Err(UlpError(UlpComparisonResult::Nan)));;
+        assert_eq!(
+            comp.compare(&-1.0, &1.0),
+            Err(UlpError(UlpComparisonResult::IncompatibleSigns))
+        );
+        assert_eq!(
+            comp.compare(&1.0, &0.0),
+            Err(UlpError(f64::ulp_diff(&1.0, &0.0)))
+        );
+        assert_eq!(
+            comp.compare(&f64::NAN, &0.0),
+            Err(UlpError(UlpComparisonResult::Nan))
+        );;
     }
 
     quickcheck! {

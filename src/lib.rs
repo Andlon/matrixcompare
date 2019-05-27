@@ -19,13 +19,13 @@ pub mod mock;
 
 pub use self::comparison::{
     AbsoluteElementwiseComparator,
-    ExactElementwiseComparator,
-    UlpElementwiseComparator,
-    FloatElementwiseComparator,
-
     // The following is just imported because we want to
     // expose trait bounds in the documentation
-    ElementwiseComparator
+    ElementwiseComparator,
+    ExactElementwiseComparator,
+    FloatElementwiseComparator,
+
+    UlpElementwiseComparator,
 };
 
 pub use self::assert_matrix_eq::elementwise_matrix_comparison;
@@ -34,7 +34,7 @@ pub use self::assert_scalar_eq::scalar_comparison;
 
 pub enum Accessor<'a, T> {
     Dense(&'a dyn DenseMatrix<T>),
-    Sparse(&'a dyn SparseMatrix<T>)
+    Sparse(&'a dyn SparseMatrix<T>),
 }
 
 pub trait Matrix<T> {
@@ -54,7 +54,8 @@ pub trait SparseMatrix<T> {
 }
 
 impl<T, X> Matrix<T> for &X
-    where X: Matrix<T>
+where
+    X: Matrix<T>,
 {
     fn rows(&self) -> usize {
         X::rows(*self)
@@ -70,7 +71,8 @@ impl<T, X> Matrix<T> for &X
 }
 
 impl<T, X> DenseMatrix<T> for &X
-    where X: DenseMatrix<T>
+where
+    X: DenseMatrix<T>,
 {
     fn get(&self, row: usize, col: usize) -> T {
         X::get(*self, row, col)
@@ -78,7 +80,8 @@ impl<T, X> DenseMatrix<T> for &X
 }
 
 impl<T, X> SparseMatrix<T> for &X
-    where X: SparseMatrix<T>
+where
+    X: SparseMatrix<T>,
 {
     fn nnz(&self) -> usize {
         X::nnz(*self)

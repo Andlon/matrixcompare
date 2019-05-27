@@ -3,8 +3,7 @@ use std::mem;
 
 /// Represents the result of an ULP-based comparison between two floating point numbers.
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub enum UlpComparisonResult
-{
+pub enum UlpComparisonResult {
     /// Signifies an exact match between two floating point numbers.
     ExactMatch,
     /// The difference in ULP between two floating point numbers.
@@ -14,7 +13,7 @@ pub enum UlpComparisonResult
     IncompatibleSigns,
     /// One or both of the two floating point numbers is a NaN,
     /// in which case the ULP comparison is not meaningful.
-    Nan
+    Nan,
 }
 
 /// Floating point types for which two instances can be compared for Unit in the Last Place (ULP) difference.
@@ -58,7 +57,7 @@ macro_rules! impl_float_ulp {
                 }
             }
         }
-    }
+    };
 }
 
 impl_float_ulp!(f32, i32);
@@ -68,9 +67,9 @@ impl_float_ulp!(f64, i64);
 mod tests {
     use super::Ulp;
     use super::UlpComparisonResult;
+    use quickcheck::TestResult;
     use std::mem;
     use std::{f32, f64};
-    use quickcheck::TestResult;
 
     #[test]
     fn plus_minus_zero_is_exact_match_f32() {

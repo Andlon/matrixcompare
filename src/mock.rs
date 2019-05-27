@@ -4,12 +4,16 @@ use crate::{Accessor, DenseMatrix, Matrix};
 pub struct MockDenseMatrix<T> {
     data: Vec<T>,
     rows: usize,
-    cols: usize
+    cols: usize,
 }
 
 impl<T> MockDenseMatrix<T> {
     pub fn from_row_major(rows: usize, cols: usize, data: Vec<T>) -> Self {
-        assert_eq!(rows * cols, data.len(), "Data must have rows*cols number of elements.");
+        assert_eq!(
+            rows * cols,
+            data.len(),
+            "Data must have rows*cols number of elements."
+        );
         Self { data, rows, cols }
     }
 }
