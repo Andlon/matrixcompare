@@ -32,31 +32,59 @@ pub use self::assert_matrix_eq::elementwise_matrix_comparison;
 //pub use self::assert_vector_eq::elementwise_vector_comparison;
 pub use self::assert_scalar_eq::scalar_comparison;
 
-pub trait Matrix<T> {
-    fn get(&self, row: usize, col: usize) -> T;
+pub enum Accessor<'a, T> {
+    Dense(&'a dyn DenseMatrix<T>),
+    Sparse(&'a dyn SparseMatrix<T>)
+}
 
+pub trait Matrix<T> {
     fn rows(&self) -> usize;
     fn cols(&self) -> usize;
+
+    fn access(&self) -> Accessor<T>;
+}
+
+pub trait DenseMatrix<T>: Matrix<T> {
+    fn get(&self, row: usize, col: usize) -> T;
 }
 
 pub trait SparseMatrix<T> {
     fn nnz(&self) -> usize;
-
-    fn get_triplet(&self, index: usize) -> (usize, usize, T);
+    fn fetch_triplets(&self) -> Vec<(usize, usize, T)>;
 }
 
 impl<T, X> Matrix<T> for &X
     where X: Matrix<T>
 {
-    fn get(&self, row: usize, col: usize) -> T {
-        X::get(*self, row, col)
-    }
-
     fn rows(&self) -> usize {
         X::rows(*self)
     }
 
     fn cols(&self) -> usize {
         X::cols(*self)
+    }
+
+    fn access(&self) -> Accessor<T> {
+        X::access(*self)
+    }
+}
+
+impl<T, X> DenseMatrix<T> for &X
+    where X: DenseMatrix<T>
+{
+    fn get(&self, row: usize, col: usize) -> T {
+        X::get(*self, row, col)
+    }
+}
+
+impl<T, X> SparseMatrix<T> for &X
+    where X: SparseMatrix<T>
+{
+    fn nnz(&self) -> usize {
+        X::nnz(*self)
+    }
+
+    fn fetch_triplets(&self) -> Vec<(usize, usize, T)> {
+        X::fetch_triplets(&self)
     }
 }

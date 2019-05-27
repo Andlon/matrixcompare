@@ -1,4 +1,4 @@
-use crate::Matrix;
+use crate::{Accessor, DenseMatrix, Matrix};
 
 #[derive(Clone, Debug)]
 pub struct MockDenseMatrix<T> {
@@ -15,16 +15,22 @@ impl<T> MockDenseMatrix<T> {
 }
 
 impl<T: Clone> Matrix<T> for MockDenseMatrix<T> {
-    fn get(&self, row: usize, col: usize) -> T {
-        let idx = row * self.cols + col;
-        self.data[idx].clone()
-    }
-
     fn rows(&self) -> usize {
         self.rows
     }
 
     fn cols(&self) -> usize {
         self.cols
+    }
+
+    fn access(&self) -> Accessor<T> {
+        Accessor::Dense(self)
+    }
+}
+
+impl<T: Clone> DenseMatrix<T> for MockDenseMatrix<T> {
+    fn get(&self, row: usize, col: usize) -> T {
+        let idx = row * self.cols + col;
+        self.data[idx].clone()
     }
 }
