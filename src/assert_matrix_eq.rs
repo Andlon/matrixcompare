@@ -124,11 +124,11 @@ Dimensions of matrices X and Y do not match.
     }
 }
 
-fn compare_dense_dense<T, C, E>(
+fn fetch_dense_dense_mismatches<T, C, E>(
     x: &DenseMatrix<T>,
     y: &DenseMatrix<T>,
-    comparator: C,
-) -> MatrixComparisonResult<T, C, E>
+    comparator: &C,
+) -> Vec<MatrixElementComparisonFailure<T, E>>
 where
     T: Clone,
     C: ElementwiseComparator<T, E>,
@@ -136,34 +136,23 @@ where
 {
     assert!(x.rows() == y.rows() && x.cols() == y.cols());
 
-    let mismatches = {
-        let mut mismatches = Vec::new();
-        for i in 0..x.rows() {
-            for j in 0..x.cols() {
-                let a = x.get(i, j);
-                let b = y.get(i, j);
-                if let Err(error) = comparator.compare(&a, &b) {
-                    mismatches.push(MatrixElementComparisonFailure {
-                        x: a.clone(),
-                        y: b.clone(),
-                        error,
-                        row: i,
-                        col: j,
-                    });
-                }
+    let mut mismatches = Vec::new();
+    for i in 0..x.rows() {
+        for j in 0..x.cols() {
+            let a = x.get(i, j);
+            let b = y.get(i, j);
+            if let Err(error) = comparator.compare(&a, &b) {
+                mismatches.push(MatrixElementComparisonFailure {
+                    x: a.clone(),
+                    y: b.clone(),
+                    error,
+                    row: i,
+                    col: j,
+                });
             }
         }
-        mismatches
-    };
-
-    if mismatches.is_empty() {
-        MatrixComparisonResult::Match
-    } else {
-        MatrixComparisonResult::MismatchedElements {
-            comparator,
-            mismatches,
-        }
     }
+    mismatches
 }
 
 pub fn elementwise_matrix_comparison<T, C, E>(
@@ -179,11 +168,20 @@ where
     let shapes_match = x.rows() == y.rows() && x.cols() == y.cols();
     if shapes_match {
         use Accessor::Dense;
-        match (x.access(), y.access()) {
+        let mismatches = match (x.access(), y.access()) {
             (Dense(x_access), Dense(y_access)) => {
-                compare_dense_dense(x_access, y_access, comparator)
+                fetch_dense_dense_mismatches(x_access, y_access, &comparator)
             }
             _ => unimplemented!(),
+        };
+
+        if mismatches.is_empty() {
+            MatrixComparisonResult::Match
+        } else {
+            MatrixComparisonResult::MismatchedElements {
+                comparator,
+                mismatches,
+            }
         }
     } else {
         MatrixComparisonResult::MismatchedDimensions {
