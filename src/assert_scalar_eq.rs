@@ -3,7 +3,6 @@ use std::fmt;
 use crate::comparison::ComparisonFailure;
 use crate::ElementwiseComparator;
 
-#[doc(hidden)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ScalarComparisonFailure<T, E>
 where
@@ -35,7 +34,6 @@ where
     }
 }
 
-#[doc(hidden)]
 #[derive(Debug, PartialEq)]
 pub enum ScalarComparisonResult<T, C, E>
 where
