@@ -33,8 +33,7 @@ impl<T, E> fmt::Display for MatrixElementComparisonFailure<T, E>
 
 #[derive(Debug, PartialEq)]
 pub enum MatrixComparisonResult<T, C, E>
-    where T: Copy,
-          C: ElementwiseComparator<T, E>,
+    where C: ElementwiseComparator<T, E>,
           E: ComparisonFailure {
     Match,
     MismatchedDimensions { dim_x: (usize, usize), dim_y: (usize, usize) },
@@ -42,7 +41,7 @@ pub enum MatrixComparisonResult<T, C, E>
 }
 
 impl<T, C, E> MatrixComparisonResult<T, C, E>
-    where T: Copy + fmt::Display,
+    where T: fmt::Display,
           C: ElementwiseComparator<T, E>,
           E: ComparisonFailure {
     pub fn panic_message(&self) -> Option<String> {
@@ -99,7 +98,7 @@ Dimensions of matrices X and Y do not match.
 
 fn compare_dense_dense<T, C, E>(x: &DenseMatrix<T>, y: &DenseMatrix<T>, comparator: C)
                                                  -> MatrixComparisonResult<T, C, E>
-    where T: Copy, C: ElementwiseComparator<T, E>, E: ComparisonFailure
+    where T: Clone, C: ElementwiseComparator<T, E>, E: ComparisonFailure
 {
     assert!(x.rows() == y.rows() && x.cols() == y.cols());
 
@@ -109,10 +108,10 @@ fn compare_dense_dense<T, C, E>(x: &DenseMatrix<T>, y: &DenseMatrix<T>, comparat
             for j in 0 .. x.cols() {
                 let a = x.get(i, j);
                 let b = y.get(i, j);
-                if let Err(error) = comparator.compare(a, b) {
+                if let Err(error) = comparator.compare(&a, &b) {
                     mismatches.push(MatrixElementComparisonFailure {
-                        x: a,
-                        y: b,
+                        x: a.clone(),
+                        y: b.clone(),
                         error,
                         row: i,
                         col: j
@@ -135,7 +134,7 @@ fn compare_dense_dense<T, C, E>(x: &DenseMatrix<T>, y: &DenseMatrix<T>, comparat
 
 pub fn elementwise_matrix_comparison<T, C, E>(x: impl Matrix<T>, y: impl Matrix<T>, comparator: C)
     -> MatrixComparisonResult<T, C, E>
-    where T: Copy, C: ElementwiseComparator<T, E>, E: ComparisonFailure
+    where T: Clone, C: ElementwiseComparator<T, E>, E: ComparisonFailure
 {
     let shapes_match = x.rows() == y.rows() && x.cols() == y.cols();
     if shapes_match {

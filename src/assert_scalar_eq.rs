@@ -29,8 +29,7 @@ impl<T, E> fmt::Display for ScalarComparisonFailure<T, E>
 #[doc(hidden)]
 #[derive(Debug, PartialEq)]
 pub enum ScalarComparisonResult<T, C, E>
-    where T: Copy,
-          C: ElementwiseComparator<T, E>,
+    where C: ElementwiseComparator<T, E>,
           E: ComparisonFailure
 {
     Match,
@@ -41,7 +40,7 @@ pub enum ScalarComparisonResult<T, C, E>
 }
 
 impl <T, C, E> ScalarComparisonResult<T, C, E>
-    where T: Copy + fmt::Display, C: ElementwiseComparator<T, E>, E: ComparisonFailure {
+    where T: fmt::Display, C: ElementwiseComparator<T, E>, E: ComparisonFailure {
     pub fn panic_message(&self) -> Option<String> {
         match self {
             &ScalarComparisonResult::Mismatch { ref comparator, ref mismatch } => {
@@ -61,20 +60,19 @@ Comparison criterion: {description}
     }
 }
 
-#[doc(hidden)]
-pub fn scalar_comparison<T, C, E>(x: T, y: T, comparator: C)
+pub fn scalar_comparison<T, C, E>(x: &T, y: &T, comparator: C)
     -> ScalarComparisonResult<T, C, E>
-    where T: Copy,
+    where T: Clone,
           C: ElementwiseComparator<T, E>,
-          E: ComparisonFailure {
-
+          E: ComparisonFailure
+{
     match comparator.compare(x, y) {
         Err(error) => ScalarComparisonResult::Mismatch {
-            comparator: comparator,
+            comparator,
             mismatch: ScalarComparisonFailure {
-                x: x,
-                y: y,
-                error: error
+                x: x.clone(),
+                y: y.clone(),
+                error
             }
         },
         _ => ScalarComparisonResult::Match
@@ -106,7 +104,7 @@ macro_rules! assert_scalar_eq {
         {
             use $crate::{scalar_comparison, ExactElementwiseComparator};
             let comp = ExactElementwiseComparator;
-            let msg = scalar_comparison($x.clone(), $y.clone(), comp).panic_message();
+            let msg = scalar_comparison(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 // Note: We need the panic to incur here inside of the macro in order
                 // for the line number to be correct when using it for tests,
@@ -121,7 +119,7 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
         {
             use $crate::{scalar_comparison, ExactElementwiseComparator};
             let comp = ExactElementwiseComparator;
-            let msg = scalar_comparison($x.clone(), $y.clone(), comp).panic_message();
+            let msg = scalar_comparison(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -130,8 +128,8 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     ($x:expr, $y:expr, comp = abs, tol = $tol:expr) => {
         {
             use $crate::{scalar_comparison, AbsoluteElementwiseComparator};
-            let comp = AbsoluteElementwiseComparator { tol: $tol };
-            let msg = scalar_comparison($x.clone(), $y.clone(), comp).panic_message();
+            let comp = AbsoluteElementwiseComparator { tol: $tol.clone() };
+            let msg = scalar_comparison(&$x.clone(), &$y.clone(), comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -140,8 +138,8 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     ($x:expr, $y:expr, comp = ulp, tol = $tol:expr) => {
         {
             use $crate::{scalar_comparison, UlpElementwiseComparator};
-            let comp = UlpElementwiseComparator { tol: $tol };
-            let msg = scalar_comparison($x.clone(), $y.clone(), comp).panic_message();
+            let comp = UlpElementwiseComparator { tol: $tol.clone() };
+            let msg = scalar_comparison(&$x.clone(), &$y.clone(), comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -151,7 +149,7 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
         {
             use $crate::{scalar_comparison, FloatElementwiseComparator};
             let comp = FloatElementwiseComparator::default();
-            let msg = scalar_comparison($x.clone(), $y.clone(), comp).panic_message();
+            let msg = scalar_comparison(&$x.clone(), &$y.clone(), comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -163,7 +161,7 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
         {
             use $crate::{scalar_comparison, FloatElementwiseComparator};
             let comp = FloatElementwiseComparator::default()$(.$key($val))+;
-            let msg = scalar_comparison($x.clone(), $y.clone(), comp).panic_message();
+            let msg = scalar_comparison(&$x.clone(), &$y.clone(), comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -197,7 +195,7 @@ mod tests {
                 }
             };
 
-            assert_eq!(scalar_comparison(x, y, comp), expected);
+            assert_eq!(scalar_comparison(&x, &y, comp), expected);
         }
     }
 
