@@ -24,8 +24,8 @@ pub use self::comparators::{
     UlpElementwiseComparator,
 };
 
-pub use self::matrix_comparison::compare_matrices;
-pub use self::scalar_comparison::compare_scalars;
+pub use self::matrix_comparison::{compare_matrices, MatrixElementComparisonFailure, MatrixComparisonResult};
+pub use self::scalar_comparison::{compare_scalars, ScalarComparisonFailure, ScalarComparisonResult};
 
 pub enum Accessor<'a, T> {
     Dense(&'a dyn DenseAccessor<T>),
