@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::comparison::ComparisonFailure;
-use crate::{Accessor, DenseMatrix, ElementwiseComparator, Matrix};
+use crate::{Accessor, DenseAccessor, ElementwiseComparator, Matrix};
 
 const MAX_MISMATCH_REPORTS: usize = 12;
 
@@ -123,8 +123,8 @@ Dimensions of matrices X and Y do not match.
 }
 
 fn fetch_dense_dense_mismatches<T, C>(
-    x: &DenseMatrix<T>,
-    y: &DenseMatrix<T>,
+    x: &DenseAccessor<T>,
+    y: &DenseAccessor<T>,
     comparator: &C,
 ) -> Vec<MatrixElementComparisonFailure<T, C::Error>>
 where

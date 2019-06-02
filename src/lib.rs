@@ -33,8 +33,8 @@ pub use self::assert_matrix_eq::elementwise_matrix_comparison;
 pub use self::assert_scalar_eq::scalar_comparison;
 
 pub enum Accessor<'a, T> {
-    Dense(&'a dyn DenseMatrix<T>),
-    Sparse(&'a dyn SparseMatrix<T>),
+    Dense(&'a dyn DenseAccessor<T>),
+    Sparse(&'a dyn SparseAccessor<T>),
 }
 
 pub trait Matrix<T> {
@@ -44,11 +44,11 @@ pub trait Matrix<T> {
     fn access(&self) -> Accessor<T>;
 }
 
-pub trait DenseMatrix<T>: Matrix<T> {
+pub trait DenseAccessor<T>: Matrix<T> {
     fn get(&self, row: usize, col: usize) -> T;
 }
 
-pub trait SparseMatrix<T> {
+pub trait SparseAccessor<T> {
     fn nnz(&self) -> usize;
     fn fetch_triplets(&self) -> Vec<(usize, usize, T)>;
 }
@@ -70,18 +70,18 @@ where
     }
 }
 
-impl<T, X> DenseMatrix<T> for &X
+impl<T, X> DenseAccessor<T> for &X
 where
-    X: DenseMatrix<T>,
+    X: DenseAccessor<T>,
 {
     fn get(&self, row: usize, col: usize) -> T {
         X::get(*self, row, col)
     }
 }
 
-impl<T, X> SparseMatrix<T> for &X
+impl<T, X> SparseAccessor<T> for &X
 where
-    X: SparseMatrix<T>,
+    X: SparseAccessor<T>,
 {
     fn nnz(&self) -> usize {
         X::nnz(*self)
