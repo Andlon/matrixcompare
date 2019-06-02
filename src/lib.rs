@@ -1,9 +1,6 @@
 #[macro_use]
-pub mod matrix_comparison;
-//
-//#[macro_use]
-//mod assert_vector_eq;
-//
+mod matrix_comparison;
+
 #[macro_use]
 mod scalar_comparison;
 
@@ -28,7 +25,6 @@ pub use self::comparators::{
 };
 
 pub use self::matrix_comparison::elementwise_matrix_comparison;
-//pub use self::assert_vector_eq::elementwise_vector_comparison;
 pub use self::scalar_comparison::scalar_comparison;
 
 pub enum Accessor<'a, T> {
