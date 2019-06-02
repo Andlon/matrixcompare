@@ -8,14 +8,14 @@ use std::fmt;
 ///
 /// Usually you should not need to interface with this trait directly. It is a part of the documentation
 /// only so that the trait bounds for the comparators are made public.
-pub trait ElementwiseComparator<T, E>
-where
-    E: ComparisonFailure,
+pub trait ElementwiseComparator<T>
 {
+    type Error: ComparisonFailure;
+
     /// Compares two elements.
     ///
     /// Returns the error associated with the comparison if it failed.
-    fn compare(&self, x: &T, y: &T) -> Result<(), E>;
+    fn compare(&self, x: &T, y: &T) -> Result<(), Self::Error>;
 
     /// A description of the comparator.
     fn description(&self) -> String;
@@ -44,10 +44,12 @@ where
     }
 }
 
-impl<T> ElementwiseComparator<T, AbsoluteError<T>> for AbsoluteElementwiseComparator<T>
+impl<T> ElementwiseComparator<T> for AbsoluteElementwiseComparator<T>
 where
     T: Clone + fmt::Display + Num + PartialOrd<T>,
 {
+    type Error = AbsoluteError<T>;
+
     fn compare(&self, a: &T, b: &T) -> Result<(), AbsoluteError<T>> {
         assert!(self.tol >= T::zero());
 
@@ -89,10 +91,12 @@ impl ComparisonFailure for ExactError {
     }
 }
 
-impl<T> ElementwiseComparator<T, ExactError> for ExactElementwiseComparator
+impl<T> ElementwiseComparator<T> for ExactElementwiseComparator
 where
     T: fmt::Display + PartialEq<T>,
 {
+    type Error = ExactError;
+
     fn compare(&self, a: &T, b: &T) -> Result<(), ExactError> {
         if a == b {
             Ok(())
@@ -130,10 +134,12 @@ impl ComparisonFailure for UlpError {
     }
 }
 
-impl<T> ElementwiseComparator<T, UlpError> for UlpElementwiseComparator
+impl<T> ElementwiseComparator<T> for UlpElementwiseComparator
 where
     T: Ulp,
 {
+    type Error = UlpError;
+
     fn compare(&self, a: &T, b: &T) -> Result<(), UlpError> {
         let diff = Ulp::ulp_diff(a, b);
         match diff {
@@ -185,10 +191,12 @@ where
     }
 }
 
-impl<T> ElementwiseComparator<T, UlpError> for FloatElementwiseComparator<T>
+impl<T> ElementwiseComparator<T> for FloatElementwiseComparator<T>
 where
     T: Ulp + Float + fmt::Display,
 {
+    type Error = UlpError;
+
     fn compare(&self, a: &T, b: &T) -> Result<(), UlpError> {
         // First perform an absolute comparison with a presumably very small epsilon tolerance
         if let Err(_) = self.abs.compare(a, b) {

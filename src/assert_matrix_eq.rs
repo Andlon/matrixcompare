@@ -41,10 +41,9 @@ where
 }
 
 #[derive(Debug, PartialEq)]
-pub enum MatrixComparisonResult<T, C, E>
+pub enum MatrixComparisonResult<T, C>
 where
-    C: ElementwiseComparator<T, E>,
-    E: ComparisonFailure,
+    C: ElementwiseComparator<T>
 {
     Match,
     MismatchedDimensions {
@@ -53,15 +52,14 @@ where
     },
     MismatchedElements {
         comparator: C,
-        mismatches: Vec<MatrixElementComparisonFailure<T, E>>,
+        mismatches: Vec<MatrixElementComparisonFailure<T, C::Error>>,
     },
 }
 
-impl<T, C, E> MatrixComparisonResult<T, C, E>
+impl<T, C> MatrixComparisonResult<T, C>
 where
     T: fmt::Display,
-    C: ElementwiseComparator<T, E>,
-    E: ComparisonFailure,
+    C: ElementwiseComparator<T>
 {
     pub fn panic_message(&self) -> Option<String> {
         match self {
@@ -124,15 +122,14 @@ Dimensions of matrices X and Y do not match.
     }
 }
 
-fn fetch_dense_dense_mismatches<T, C, E>(
+fn fetch_dense_dense_mismatches<T, C>(
     x: &DenseMatrix<T>,
     y: &DenseMatrix<T>,
     comparator: &C,
-) -> Vec<MatrixElementComparisonFailure<T, E>>
+) -> Vec<MatrixElementComparisonFailure<T, C::Error>>
 where
     T: Clone,
-    C: ElementwiseComparator<T, E>,
-    E: ComparisonFailure,
+    C: ElementwiseComparator<T>
 {
     assert!(x.rows() == y.rows() && x.cols() == y.cols());
 
@@ -155,15 +152,14 @@ where
     mismatches
 }
 
-pub fn elementwise_matrix_comparison<T, C, E>(
+pub fn elementwise_matrix_comparison<T, C>(
     x: impl Matrix<T>,
     y: impl Matrix<T>,
     comparator: C,
-) -> MatrixComparisonResult<T, C, E>
+) -> MatrixComparisonResult<T, C>
 where
     T: Clone,
-    C: ElementwiseComparator<T, E>,
-    E: ComparisonFailure,
+    C: ElementwiseComparator<T>
 {
     let shapes_match = x.rows() == y.rows() && x.cols() == y.cols();
     if shapes_match {

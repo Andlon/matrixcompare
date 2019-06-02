@@ -35,23 +35,21 @@ where
 }
 
 #[derive(Debug, PartialEq)]
-pub enum ScalarComparisonResult<T, C, E>
+pub enum ScalarComparisonResult<T, C>
 where
-    C: ElementwiseComparator<T, E>,
-    E: ComparisonFailure,
+    C: ElementwiseComparator<T>
 {
     Match,
     Mismatch {
         comparator: C,
-        mismatch: ScalarComparisonFailure<T, E>,
+        mismatch: ScalarComparisonFailure<T, C::Error>,
     },
 }
 
-impl<T, C, E> ScalarComparisonResult<T, C, E>
+impl<T, C> ScalarComparisonResult<T, C>
 where
     T: fmt::Display,
-    C: ElementwiseComparator<T, E>,
-    E: ComparisonFailure,
+    C: ElementwiseComparator<T>
 {
     pub fn panic_message(&self) -> Option<String> {
         match self {
@@ -74,11 +72,10 @@ Comparison criterion: {description}
     }
 }
 
-pub fn scalar_comparison<T, C, E>(x: &T, y: &T, comparator: C) -> ScalarComparisonResult<T, C, E>
+pub fn scalar_comparison<T, C>(x: &T, y: &T, comparator: C) -> ScalarComparisonResult<T, C>
 where
     T: Clone,
-    C: ElementwiseComparator<T, E>,
-    E: ComparisonFailure,
+    C: ElementwiseComparator<T>
 {
     match comparator.compare(x, y) {
         Err(error) => ScalarComparisonResult::Mismatch {
