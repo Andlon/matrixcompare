@@ -1,17 +1,18 @@
 #[macro_use]
-pub mod assert_matrix_eq;
+pub mod matrix_comparison;
 //
 //#[macro_use]
 //mod assert_vector_eq;
 //
 #[macro_use]
-mod assert_scalar_eq;
+mod scalar_comparison;
 
 #[cfg(test)]
 #[macro_use]
 extern crate quickcheck;
 
 mod comparators;
+mod macros;
 pub mod ulp;
 
 #[cfg(test)]
@@ -26,9 +27,9 @@ pub use self::comparators::{
     UlpElementwiseComparator,
 };
 
-pub use self::assert_matrix_eq::elementwise_matrix_comparison;
+pub use self::matrix_comparison::elementwise_matrix_comparison;
 //pub use self::assert_vector_eq::elementwise_vector_comparison;
-pub use self::assert_scalar_eq::scalar_comparison;
+pub use self::scalar_comparison::scalar_comparison;
 
 pub enum Accessor<'a, T> {
     Dense(&'a dyn DenseAccessor<T>),

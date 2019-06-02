@@ -90,100 +90,11 @@ where
     }
 }
 
-/// Compare scalars for exact or approximate equality.
-///
-/// This macro works analogously to [assert_matrix_eq!](macro.assert_matrix_eq.html),
-/// but is used for comparing scalars (e.g. integers, floating-point numbers)
-/// rather than matrices. Please see the documentation for `assert_matrix_eq!`
-/// for details about issues that arise when comparing floating-point numbers,
-/// as well as an explanation for how these macros can be used to resolve
-/// these issues.
-///
-/// # Examples
-///
-/// ```
-/// # #[macro_use] extern crate assert_matrix_eq; fn main() {
-/// let x = 3.00;
-/// let y = 3.05;
-/// // Assert that |x - y| <= 0.1
-/// assert_scalar_eq!(x, y, comp = abs, tol = 0.1);
-/// # }
-/// ```
-#[macro_export]
-macro_rules! assert_scalar_eq {
-    ($x:expr, $y:expr) => {
-        {
-            use $crate::{scalar_comparison, ExactElementwiseComparator};
-            let comp = ExactElementwiseComparator;
-            let msg = scalar_comparison(&$x, &$y, comp).panic_message();
-            if let Some(msg) = msg {
-                // Note: We need the panic to incur here inside of the macro in order
-                // for the line number to be correct when using it for tests,
-                // hence we build the panic message in code, but panic here.
-                panic!("{msg}
-Please see the documentation for ways to compare scalars approximately.\n\n",
-                    msg = msg.trim_end());
-            }
-        }
-    };
-    ($x:expr, $y:expr, comp = exact) => {
-        {
-            use $crate::{scalar_comparison, ExactElementwiseComparator};
-            let comp = ExactElementwiseComparator;
-            let msg = scalar_comparison(&$x, &$y, comp).panic_message();
-            if let Some(msg) = msg {
-                panic!(msg);
-            }
-        }
-    };
-    ($x:expr, $y:expr, comp = abs, tol = $tol:expr) => {
-        {
-            use $crate::{scalar_comparison, AbsoluteElementwiseComparator};
-            let comp = AbsoluteElementwiseComparator { tol: $tol.clone() };
-            let msg = scalar_comparison(&$x.clone(), &$y.clone(), comp).panic_message();
-            if let Some(msg) = msg {
-                panic!(msg);
-            }
-        }
-    };
-    ($x:expr, $y:expr, comp = ulp, tol = $tol:expr) => {
-        {
-            use $crate::{scalar_comparison, UlpElementwiseComparator};
-            let comp = UlpElementwiseComparator { tol: $tol.clone() };
-            let msg = scalar_comparison(&$x.clone(), &$y.clone(), comp).panic_message();
-            if let Some(msg) = msg {
-                panic!(msg);
-            }
-        }
-    };
-    ($x:expr, $y:expr, comp = float) => {
-        {
-            use $crate::{scalar_comparison, FloatElementwiseComparator};
-            let comp = FloatElementwiseComparator::default();
-            let msg = scalar_comparison(&$x.clone(), &$y.clone(), comp).panic_message();
-            if let Some(msg) = msg {
-                panic!(msg);
-            }
-        }
-    };
-    // The following allows us to optionally tweak the epsilon and ulp tolerances
-    // used in the default float comparator.
-    ($x:expr, $y:expr, comp = float, $($key:ident = $val:expr),+) => {
-        {
-            use $crate::{scalar_comparison, FloatElementwiseComparator};
-            let comp = FloatElementwiseComparator::default()$(.$key($val))+;
-            let msg = scalar_comparison(&$x.clone(), &$y.clone(), comp).panic_message();
-            if let Some(msg) = msg {
-                panic!(msg);
-            }
-        }
-    };
-}
-
 #[cfg(test)]
 mod tests {
-    use super::scalar_comparison;
     use crate::comparators::{ExactElementwiseComparator, ExactError};
+    use crate::scalar_comparison;
+    use crate::assert_scalar_eq;
 
     #[test]
     fn scalar_comparison_reports_correct_mismatch() {
