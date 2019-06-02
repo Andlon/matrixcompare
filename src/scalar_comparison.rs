@@ -37,7 +37,7 @@ where
 #[derive(Debug, PartialEq)]
 pub enum ScalarComparisonResult<T, C>
 where
-    C: ElementwiseComparator<T>
+    C: ElementwiseComparator<T>,
 {
     Match,
     Mismatch {
@@ -49,7 +49,7 @@ where
 impl<T, C> ScalarComparisonResult<T, C>
 where
     T: fmt::Display,
-    C: ElementwiseComparator<T>
+    C: ElementwiseComparator<T>,
 {
     pub fn panic_message(&self) -> Option<String> {
         match self {
@@ -75,7 +75,7 @@ Comparison criterion: {description}
 pub fn compare_scalars<T, C>(x: &T, y: &T, comparator: C) -> ScalarComparisonResult<T, C>
 where
     T: Clone,
-    C: ElementwiseComparator<T>
+    C: ElementwiseComparator<T>,
 {
     match comparator.compare(x, y) {
         Err(error) => ScalarComparisonResult::Mismatch {
@@ -92,9 +92,9 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::assert_scalar_eq;
     use crate::comparators::{ExactElementwiseComparator, ExactError};
     use crate::compare_scalars;
-    use crate::assert_scalar_eq;
 
     #[test]
     fn scalar_comparison_reports_correct_mismatch() {

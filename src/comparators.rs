@@ -8,8 +8,7 @@ use std::fmt;
 ///
 /// Usually you should not need to interface with this trait directly. It is a part of the documentation
 /// only so that the trait bounds for the comparators are made public.
-pub trait ElementwiseComparator<T>
-{
+pub trait ElementwiseComparator<T> {
     type Error: ComparisonFailure;
 
     /// Compares two elements.

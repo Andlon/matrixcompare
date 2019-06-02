@@ -16,16 +16,16 @@ pub mod ulp;
 pub mod mock;
 
 pub use self::comparators::{
-    ElementwiseComparator,
-    ComparisonFailure,
-    AbsoluteElementwiseComparator,
-    ExactElementwiseComparator,
-    FloatElementwiseComparator,
-    UlpElementwiseComparator,
+    AbsoluteElementwiseComparator, ComparisonFailure, ElementwiseComparator,
+    ExactElementwiseComparator, FloatElementwiseComparator, UlpElementwiseComparator,
 };
 
-pub use self::matrix_comparison::{compare_matrices, MatrixElementComparisonFailure, MatrixComparisonResult};
-pub use self::scalar_comparison::{compare_scalars, ScalarComparisonFailure, ScalarComparisonResult};
+pub use self::matrix_comparison::{
+    compare_matrices, MatrixComparisonResult, MatrixElementComparisonFailure,
+};
+pub use self::scalar_comparison::{
+    compare_scalars, ScalarComparisonFailure, ScalarComparisonResult,
+};
 
 pub enum Accessor<'a, T> {
     Dense(&'a dyn DenseAccessor<T>),

@@ -43,7 +43,7 @@ where
 #[derive(Debug, PartialEq)]
 pub enum MatrixComparisonResult<T, C>
 where
-    C: ElementwiseComparator<T>
+    C: ElementwiseComparator<T>,
 {
     Match,
     MismatchedDimensions {
@@ -59,7 +59,7 @@ where
 impl<T, C> MatrixComparisonResult<T, C>
 where
     T: fmt::Display,
-    C: ElementwiseComparator<T>
+    C: ElementwiseComparator<T>,
 {
     pub fn panic_message(&self) -> Option<String> {
         match self {
@@ -129,7 +129,7 @@ fn fetch_dense_dense_mismatches<T, C>(
 ) -> Vec<MatrixElementComparisonFailure<T, C::Error>>
 where
     T: Clone,
-    C: ElementwiseComparator<T>
+    C: ElementwiseComparator<T>,
 {
     assert!(x.rows() == y.rows() && x.cols() == y.cols());
 
@@ -159,7 +159,7 @@ pub fn compare_matrices<T, C>(
 ) -> MatrixComparisonResult<T, C>
 where
     T: Clone,
-    C: ElementwiseComparator<T>
+    C: ElementwiseComparator<T>,
 {
     let shapes_match = x.rows() == y.rows() && x.cols() == y.cols();
     if shapes_match {
@@ -190,9 +190,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::{compare_matrices, MatrixComparisonResult};
+    use crate::assert_matrix_eq;
     use crate::comparators::{ExactElementwiseComparator, ExactError};
     use crate::mock::MockDenseMatrix;
-    use crate::assert_matrix_eq;
     use quickcheck::TestResult;
 
     quickcheck! {
