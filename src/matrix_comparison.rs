@@ -152,7 +152,7 @@ where
     mismatches
 }
 
-pub fn elementwise_matrix_comparison<T, C>(
+pub fn compare_matrices<T, C>(
     x: impl Matrix<T>,
     y: impl Matrix<T>,
     comparator: C,
@@ -189,7 +189,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{elementwise_matrix_comparison, MatrixComparisonResult};
+    use super::{compare_matrices, MatrixComparisonResult};
     use crate::comparators::{ExactElementwiseComparator, ExactError};
     use crate::mock::MockDenseMatrix;
     use crate::assert_matrix_eq;
@@ -212,7 +212,7 @@ mod tests {
 
             let expected = MatrixComparisonResult::MismatchedDimensions { dim_x: (m, n), dim_y: (p, q) };
 
-            TestResult::from_bool(elementwise_matrix_comparison(x, y, comp) == expected)
+            TestResult::from_bool(compare_matrices(x, y, comp) == expected)
         }
     }
 
@@ -221,12 +221,12 @@ mod tests {
             let comp = ExactElementwiseComparator;
             let ref x = MockDenseMatrix::from_row_major(m, n, vec![0; m * n]);
 
-            elementwise_matrix_comparison(x, x, comp) == MatrixComparisonResult::Match
+            compare_matrices(x, x, comp) == MatrixComparisonResult::Match
         }
     }
 
     #[test]
-    fn elementwise_matrix_comparison_reports_correct_mismatches() {
+    fn compare_matrices_reports_correct_mismatches() {
         use super::MatrixComparisonResult::MismatchedElements;
         use super::MatrixElementComparisonFailure;
 
@@ -248,7 +248,7 @@ mod tests {
                 }],
             };
 
-            assert_eq!(elementwise_matrix_comparison(x, y, comp), expected);
+            assert_eq!(compare_matrices(x, y, comp), expected);
         }
 
         {
@@ -277,7 +277,7 @@ mod tests {
                 mismatches: mismatches,
             };
 
-            assert_eq!(elementwise_matrix_comparison(x, y, comp), expected);
+            assert_eq!(compare_matrices(x, y, comp), expected);
         }
 
         {
@@ -306,7 +306,7 @@ mod tests {
                 mismatches: mismatches,
             };
 
-            assert_eq!(elementwise_matrix_comparison(x, y, comp), expected);
+            assert_eq!(compare_matrices(x, y, comp), expected);
         }
 
         {
@@ -336,7 +336,7 @@ mod tests {
                 mismatches: mismatches,
             };
 
-            assert_eq!(elementwise_matrix_comparison(x, y, comp), expected);
+            assert_eq!(compare_matrices(x, y, comp), expected);
         }
     }
 

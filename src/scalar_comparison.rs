@@ -72,7 +72,7 @@ Comparison criterion: {description}
     }
 }
 
-pub fn scalar_comparison<T, C>(x: &T, y: &T, comparator: C) -> ScalarComparisonResult<T, C>
+pub fn compare_scalars<T, C>(x: &T, y: &T, comparator: C) -> ScalarComparisonResult<T, C>
 where
     T: Clone,
     C: ElementwiseComparator<T>
@@ -93,7 +93,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::comparators::{ExactElementwiseComparator, ExactError};
-    use crate::scalar_comparison;
+    use crate::compare_scalars;
     use crate::assert_scalar_eq;
 
     #[test]
@@ -116,7 +116,7 @@ mod tests {
                 },
             };
 
-            assert_eq!(scalar_comparison(&x, &y, comp), expected);
+            assert_eq!(compare_scalars(&x, &y, comp), expected);
         }
     }
 

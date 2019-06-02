@@ -183,12 +183,12 @@ macro_rules! assert_matrix_eq {
     ($x:expr, $y:expr) => {
         {
             // Note: The reason we take slices of both x and y is that if x or y are passed as references,
-            // we don't attempt to call elementwise_matrix_comparison with a &&BaseMatrix type (double reference),
+            // we don't attempt to call compare_matrices with a &&BaseMatrix type (double reference),
             // which does not work due to generics.
-            use $crate::{elementwise_matrix_comparison, ExactElementwiseComparator};
+            use $crate::{compare_matrices, ExactElementwiseComparator};
 
             let comp = ExactElementwiseComparator;
-            let msg = elementwise_matrix_comparison(&$x, &$y, comp).panic_message();
+            let msg = compare_matrices(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 // Note: We need the panic to incur here inside of the macro in order
                 // for the line number to be correct when using it for tests,
@@ -201,10 +201,10 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = exact) => {
         {
-            use $crate::{elementwise_matrix_comparison, ExactElementwiseComparator};
+            use $crate::{compare_matrices, ExactElementwiseComparator};
 
             let comp = ExactElementwiseComparator;
-            let msg = elementwise_matrix_comparison(&$x, &$y, comp).panic_message();
+            let msg = compare_matrices(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -212,10 +212,10 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = abs, tol = $tol:expr) => {
         {
-            use $crate::{elementwise_matrix_comparison, AbsoluteElementwiseComparator};
+            use $crate::{compare_matrices, AbsoluteElementwiseComparator};
 
             let comp = AbsoluteElementwiseComparator { tol: $tol };
-            let msg = elementwise_matrix_comparison(&$x, &$y, comp).panic_message();
+            let msg = compare_matrices(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -223,10 +223,10 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = ulp, tol = $tol:expr) => {
         {
-            use $crate::{elementwise_matrix_comparison, UlpElementwiseComparator};
+            use $crate::{compare_matrices, UlpElementwiseComparator};
 
             let comp = UlpElementwiseComparator { tol: $tol };
-            let msg = elementwise_matrix_comparison(&$x, &$y, comp).panic_message();
+            let msg = compare_matrices(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -234,10 +234,10 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = float) => {
         {
-            use $crate::{elementwise_matrix_comparison, FloatElementwiseComparator};
+            use $crate::{compare_matrices, FloatElementwiseComparator};
 
             let comp = FloatElementwiseComparator::default();
-            let msg = elementwise_matrix_comparison(&$x, &$y, comp).panic_message();
+            let msg = compare_matrices(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -247,10 +247,10 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
     // used in the default float comparator.
     ($x:expr, $y:expr, comp = float, $($key:ident = $val:expr),+) => {
         {
-            use $crate::{elementwise_matrix_comparison, FloatElementwiseComparator};
+            use $crate::{compare_matrices, FloatElementwiseComparator};
 
             let comp = FloatElementwiseComparator::default()$(.$key($val))+;
-            let msg = elementwise_matrix_comparison(&$x, &$y, comp).panic_message();
+            let msg = compare_matrices(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -281,9 +281,9 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
 macro_rules! assert_scalar_eq {
     ($x:expr, $y:expr) => {
         {
-            use $crate::{scalar_comparison, ExactElementwiseComparator};
+            use $crate::{compare_scalars, ExactElementwiseComparator};
             let comp = ExactElementwiseComparator;
-            let msg = scalar_comparison(&$x, &$y, comp).panic_message();
+            let msg = compare_scalars(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 // Note: We need the panic to incur here inside of the macro in order
                 // for the line number to be correct when using it for tests,
@@ -296,9 +296,9 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = exact) => {
         {
-            use $crate::{scalar_comparison, ExactElementwiseComparator};
+            use $crate::{compare_scalars, ExactElementwiseComparator};
             let comp = ExactElementwiseComparator;
-            let msg = scalar_comparison(&$x, &$y, comp).panic_message();
+            let msg = compare_scalars(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -306,9 +306,9 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = abs, tol = $tol:expr) => {
         {
-            use $crate::{scalar_comparison, AbsoluteElementwiseComparator};
+            use $crate::{compare_scalars, AbsoluteElementwiseComparator};
             let comp = AbsoluteElementwiseComparator { tol: $tol.clone() };
-            let msg = scalar_comparison(&$x.clone(), &$y.clone(), comp).panic_message();
+            let msg = compare_scalars(&$x.clone(), &$y.clone(), comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -316,9 +316,9 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = ulp, tol = $tol:expr) => {
         {
-            use $crate::{scalar_comparison, UlpElementwiseComparator};
+            use $crate::{compare_scalars, UlpElementwiseComparator};
             let comp = UlpElementwiseComparator { tol: $tol.clone() };
-            let msg = scalar_comparison(&$x.clone(), &$y.clone(), comp).panic_message();
+            let msg = compare_scalars(&$x.clone(), &$y.clone(), comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -326,9 +326,9 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = float) => {
         {
-            use $crate::{scalar_comparison, FloatElementwiseComparator};
+            use $crate::{compare_scalars, FloatElementwiseComparator};
             let comp = FloatElementwiseComparator::default();
-            let msg = scalar_comparison(&$x.clone(), &$y.clone(), comp).panic_message();
+            let msg = compare_scalars(&$x.clone(), &$y.clone(), comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
@@ -338,9 +338,9 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     // used in the default float comparator.
     ($x:expr, $y:expr, comp = float, $($key:ident = $val:expr),+) => {
         {
-            use $crate::{scalar_comparison, FloatElementwiseComparator};
+            use $crate::{compare_scalars, FloatElementwiseComparator};
             let comp = FloatElementwiseComparator::default()$(.$key($val))+;
-            let msg = scalar_comparison(&$x.clone(), &$y.clone(), comp).panic_message();
+            let msg = compare_scalars(&$x.clone(), &$y.clone(), comp).panic_message();
             if let Some(msg) = msg {
                 panic!(msg);
             }
