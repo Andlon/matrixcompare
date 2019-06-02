@@ -11,20 +11,18 @@ mod assert_scalar_eq;
 #[macro_use]
 extern crate quickcheck;
 
-pub mod comparison;
+mod comparators;
 pub mod ulp;
 
 #[cfg(test)]
 pub mod mock;
 
-pub use self::comparison::{
-    AbsoluteElementwiseComparator,
-    // The following is just imported because we want to
-    // expose trait bounds in the documentation
+pub use self::comparators::{
     ElementwiseComparator,
+    ComparisonFailure,
+    AbsoluteElementwiseComparator,
     ExactElementwiseComparator,
     FloatElementwiseComparator,
-
     UlpElementwiseComparator,
 };
 

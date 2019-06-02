@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::comparison::ComparisonFailure;
+use crate::comparators::ComparisonFailure;
 use crate::ElementwiseComparator;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -183,7 +183,7 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
 #[cfg(test)]
 mod tests {
     use super::scalar_comparison;
-    use crate::comparison::{ExactElementwiseComparator, ExactError};
+    use crate::comparators::{ExactElementwiseComparator, ExactError};
 
     #[test]
     fn scalar_comparison_reports_correct_mismatch() {

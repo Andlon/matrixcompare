@@ -223,7 +223,7 @@ ULP tolerance: {ulp}",
 
 #[cfg(test)]
 mod tests {
-    use crate::comparison::{
+    use crate::comparators::{
         AbsoluteElementwiseComparator, AbsoluteError, ElementwiseComparator,
         ExactElementwiseComparator, ExactError, FloatElementwiseComparator,
         UlpElementwiseComparator, UlpError,

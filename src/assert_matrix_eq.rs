@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::comparison::ComparisonFailure;
+use crate::comparators::ComparisonFailure;
 use crate::{Accessor, DenseAccessor, ElementwiseComparator, Matrix};
 
 const MAX_MISMATCH_REPORTS: usize = 12;
@@ -450,7 +450,7 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
 #[cfg(test)]
 mod tests {
     use super::{elementwise_matrix_comparison, MatrixComparisonResult};
-    use crate::comparison::{ExactElementwiseComparator, ExactError};
+    use crate::comparators::{ExactElementwiseComparator, ExactError};
     use crate::mock::MockDenseMatrix;
     use quickcheck::TestResult;
 
