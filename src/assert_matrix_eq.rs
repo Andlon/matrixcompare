@@ -136,8 +136,8 @@ where
     let mut mismatches = Vec::new();
     for i in 0..x.rows() {
         for j in 0..x.cols() {
-            let a = x.get(i, j);
-            let b = y.get(i, j);
+            let a = x.fetch_single(i, j);
+            let b = y.fetch_single(i, j);
             if let Err(error) = comparator.compare(&a, &b) {
                 mismatches.push(MatrixElementComparisonFailure {
                     x: a.clone(),

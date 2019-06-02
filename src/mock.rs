@@ -33,7 +33,7 @@ impl<T: Clone> Matrix<T> for MockDenseMatrix<T> {
 }
 
 impl<T: Clone> DenseAccessor<T> for MockDenseMatrix<T> {
-    fn get(&self, row: usize, col: usize) -> T {
+    fn fetch_single(&self, row: usize, col: usize) -> T {
         let idx = row * self.cols + col;
         self.data[idx].clone()
     }

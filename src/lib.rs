@@ -45,7 +45,7 @@ pub trait Matrix<T> {
 }
 
 pub trait DenseAccessor<T>: Matrix<T> {
-    fn get(&self, row: usize, col: usize) -> T;
+    fn fetch_single(&self, row: usize, col: usize) -> T;
 }
 
 pub trait SparseAccessor<T> {
@@ -74,8 +74,8 @@ impl<T, X> DenseAccessor<T> for &X
 where
     X: DenseAccessor<T>,
 {
-    fn get(&self, row: usize, col: usize) -> T {
-        X::get(*self, row, col)
+    fn fetch_single(&self, row: usize, col: usize) -> T {
+        X::fetch_single(*self, row, col)
     }
 }
 
