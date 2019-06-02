@@ -1,3 +1,7 @@
+//! Tools for comparing matrices for debugging purposes.
+//!
+//! TODO: Docs
+
 #[macro_use]
 mod matrix_comparison;
 
