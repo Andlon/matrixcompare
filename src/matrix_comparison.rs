@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::comparators::{ElementwiseComparator, ComparisonFailure};
+use crate::comparators::{ComparisonFailure, ElementwiseComparator};
 use crate::{Accessor, DenseAccessor, Matrix};
 
 const MAX_MISMATCH_REPORTS: usize = 12;
