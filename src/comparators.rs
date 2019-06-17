@@ -1,3 +1,5 @@
+//! Comparators used for element-wise comparison of matrix entries.
+
 use crate::ulp::{Ulp, UlpComparisonResult};
 
 use num::{Float, Num};

@@ -185,7 +185,8 @@ macro_rules! assert_matrix_eq {
             // Note: The reason we take slices of both x and y is that if x or y are passed as references,
             // we don't attempt to call compare_matrices with a &&BaseMatrix type (double reference),
             // which does not work due to generics.
-            use $crate::{compare_matrices, ExactElementwiseComparator};
+            use $crate::{compare_matrices};
+            use $crate::comparators::ExactElementwiseComparator;
 
             let comp = ExactElementwiseComparator;
             let msg = compare_matrices(&$x, &$y, comp).panic_message();
@@ -201,7 +202,8 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = exact) => {
         {
-            use $crate::{compare_matrices, ExactElementwiseComparator};
+            use $crate::{compare_matrices};
+            use $crate::comparators::ExactElementwiseComparator;
 
             let comp = ExactElementwiseComparator;
             let msg = compare_matrices(&$x, &$y, comp).panic_message();
@@ -212,7 +214,8 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = abs, tol = $tol:expr) => {
         {
-            use $crate::{compare_matrices, AbsoluteElementwiseComparator};
+            use $crate::{compare_matrices};
+            use $crate::comparators::AbsoluteElementwiseComparator;
 
             let comp = AbsoluteElementwiseComparator { tol: $tol };
             let msg = compare_matrices(&$x, &$y, comp).panic_message();
@@ -223,7 +226,8 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = ulp, tol = $tol:expr) => {
         {
-            use $crate::{compare_matrices, UlpElementwiseComparator};
+            use $crate::{compare_matrices};
+            use $crate::comparators::UlpElementwiseComparator;
 
             let comp = UlpElementwiseComparator { tol: $tol };
             let msg = compare_matrices(&$x, &$y, comp).panic_message();
@@ -234,7 +238,8 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = float) => {
         {
-            use $crate::{compare_matrices, FloatElementwiseComparator};
+            use $crate::{compare_matrices};
+            use $crate::comparators::FloatElementwiseComparator;
 
             let comp = FloatElementwiseComparator::default();
             let msg = compare_matrices(&$x, &$y, comp).panic_message();
@@ -247,7 +252,8 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
     // used in the default float comparator.
     ($x:expr, $y:expr, comp = float, $($key:ident = $val:expr),+) => {
         {
-            use $crate::{compare_matrices, FloatElementwiseComparator};
+            use $crate::{compare_matrices};
+            use $crate::comparators::FloatElementwiseComparator;
 
             let comp = FloatElementwiseComparator::default()$(.$key($val))+;
             let msg = compare_matrices(&$x, &$y, comp).panic_message();
@@ -281,7 +287,8 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
 macro_rules! assert_scalar_eq {
     ($x:expr, $y:expr) => {
         {
-            use $crate::{compare_scalars, ExactElementwiseComparator};
+            use $crate::{compare_scalars};
+            use $crate::comparators::ExactElementwiseComparator;
             let comp = ExactElementwiseComparator;
             let msg = compare_scalars(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
@@ -296,7 +303,8 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = exact) => {
         {
-            use $crate::{compare_scalars, ExactElementwiseComparator};
+            use $crate::{compare_scalars};
+            use $crate::comparators::ExactElementwiseComparator;
             let comp = ExactElementwiseComparator;
             let msg = compare_scalars(&$x, &$y, comp).panic_message();
             if let Some(msg) = msg {
@@ -306,7 +314,8 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = abs, tol = $tol:expr) => {
         {
-            use $crate::{compare_scalars, AbsoluteElementwiseComparator};
+            use $crate::{compare_scalars};
+            use $crate::comparators::AbsoluteElementwiseComparator;
             let comp = AbsoluteElementwiseComparator { tol: $tol.clone() };
             let msg = compare_scalars(&$x.clone(), &$y.clone(), comp).panic_message();
             if let Some(msg) = msg {
@@ -316,7 +325,8 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = ulp, tol = $tol:expr) => {
         {
-            use $crate::{compare_scalars, UlpElementwiseComparator};
+            use $crate::{compare_scalars};
+            use $crate::comparators::UlpElementwiseComparator;
             let comp = UlpElementwiseComparator { tol: $tol.clone() };
             let msg = compare_scalars(&$x.clone(), &$y.clone(), comp).panic_message();
             if let Some(msg) = msg {
@@ -326,7 +336,8 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     };
     ($x:expr, $y:expr, comp = float) => {
         {
-            use $crate::{compare_scalars, FloatElementwiseComparator};
+            use $crate::{compare_scalars};
+            use $crate::comparators::FloatElementwiseComparator;
             let comp = FloatElementwiseComparator::default();
             let msg = compare_scalars(&$x.clone(), &$y.clone(), comp).panic_message();
             if let Some(msg) = msg {
@@ -338,7 +349,8 @@ Please see the documentation for ways to compare scalars approximately.\n\n",
     // used in the default float comparator.
     ($x:expr, $y:expr, comp = float, $($key:ident = $val:expr),+) => {
         {
-            use $crate::{compare_scalars, FloatElementwiseComparator};
+            use $crate::{compare_scalars};
+            use $crate::comparators::FloatElementwiseComparator;
             let comp = FloatElementwiseComparator::default()$(.$key($val))+;
             let msg = compare_scalars(&$x.clone(), &$y.clone(), comp).panic_message();
             if let Some(msg) = msg {

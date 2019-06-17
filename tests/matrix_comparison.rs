@@ -1,6 +1,6 @@
 use matcomp::{compare_matrices, MatrixComparisonResult};
 use matcomp::assert_matrix_eq;
-use matcomp::{ExactElementwiseComparator, ExactError};
+use matcomp::comparators::{ExactElementwiseComparator, ExactError};
 use matcomp::mock::MockDenseMatrix;
 use quickcheck::{quickcheck, TestResult};
 

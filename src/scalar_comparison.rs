@@ -1,7 +1,6 @@
 use std::fmt;
 
-use crate::comparators::ComparisonFailure;
-use crate::ElementwiseComparator;
+use crate::comparators::{ComparisonFailure, ElementwiseComparator};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ScalarComparisonFailure<T, E>

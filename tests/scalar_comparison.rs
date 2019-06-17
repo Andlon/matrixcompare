@@ -1,5 +1,5 @@
 use matcomp::assert_scalar_eq;
-use matcomp::{ExactElementwiseComparator, ExactError};
+use matcomp::comparators::{ExactElementwiseComparator, ExactError};
 use matcomp::compare_scalars;
 
 #[test]

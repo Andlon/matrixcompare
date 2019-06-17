@@ -12,19 +12,13 @@ mod scalar_comparison;
 #[macro_use]
 extern crate quickcheck;
 
-mod comparators;
+pub mod comparators;
 mod macros;
 pub mod ulp;
 
 // TODO: Put under feature flag
 //#[cfg(test)]
 pub mod mock;
-
-pub use self::comparators::{
-    AbsoluteElementwiseComparator, ComparisonFailure, ElementwiseComparator,
-    ExactElementwiseComparator, FloatElementwiseComparator, UlpElementwiseComparator,
-    ExactError, AbsoluteError, UlpError
-};
 
 pub use self::matrix_comparison::{
     compare_matrices, MatrixComparisonResult, MatrixElementComparisonFailure,
