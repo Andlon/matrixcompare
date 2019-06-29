@@ -51,31 +51,29 @@ pub struct OutOfBoundsIndices {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ElementsMismatch<T, Comparator, Error>
+pub struct ElementsMismatch<T, Error>
 {
-    pub comparator: Comparator,
+    pub comparator_description: String,
     pub mismatches: Vec<MatrixElementComparisonFailure<T, Error>>
 }
 
 #[derive(Debug, PartialEq)]
-pub enum MatrixComparisonResult<T, C>
-where
-    C: ElementwiseComparator<T>,
+pub enum MatrixComparisonResult<T, Error>
 {
     Match,
     MismatchedDimensions(DimensionMismatch),
-    MismatchedElements(ElementsMismatch<T, C, C::Error>),
+    MismatchedElements(ElementsMismatch<T, Error>),
 }
 
-impl<T, C> MatrixComparisonResult<T, C>
+impl<T, Error> MatrixComparisonResult<T, Error>
 where
     T: fmt::Display,
-    C: ElementwiseComparator<T>,
+    Error: ComparisonFailure,
 {
     pub fn panic_message(&self) -> Option<String> {
         match self {
             &MatrixComparisonResult::MismatchedElements(ElementsMismatch {
-                ref comparator,
+                ref comparator_description,
                 ref mismatches,
             }) => {
                 // TODO: Aligned output
@@ -112,7 +110,7 @@ The mismatched elements are listed below, in the format
 Comparison criterion: {description}
 \n",
                     num = mismatches.len(),
-                    description = comparator.description(),
+                    description = comparator_description,
                     mismatches = formatted_mismatches,
                     overflow_msg = overflow_msg
                 ))
@@ -169,7 +167,7 @@ fn compare_dense_sparse<T, C>(
     x: &DenseAccessor<T>,
     y: &SparseAccessor<T>,
     _comparator: &C
-) -> MatrixComparisonResult<T, C>
+) -> MatrixComparisonResult<T, C::Error>
 where T: Clone,
       C: ElementwiseComparator<T>
 {
@@ -188,7 +186,7 @@ fn compare_dense_dense<T, C>(
     x: &DenseAccessor<T>,
     y: &DenseAccessor<T>,
     comparator: C,
-) -> MatrixComparisonResult<T, C>
+) -> MatrixComparisonResult<T, C::Error>
 where
     T: Clone,
     C: ElementwiseComparator<T>,
@@ -217,7 +215,7 @@ where
     if mismatches.is_empty() {
         MatrixComparisonResult::Match
     } else {
-        MatrixComparisonResult::MismatchedElements(ElementsMismatch {comparator, mismatches })
+        MatrixComparisonResult::MismatchedElements(ElementsMismatch { comparator_description: comparator.description(), mismatches })
     }
 }
 
@@ -243,7 +241,7 @@ pub fn compare_matrices<T, C>(
     x: impl Matrix<T>,
     y: impl Matrix<T>,
     comparator: C,
-) -> MatrixComparisonResult<T, C>
+) -> MatrixComparisonResult<T, C::Error>
 where
     T: Clone,
     C: ElementwiseComparator<T>,

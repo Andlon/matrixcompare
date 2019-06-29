@@ -1,5 +1,5 @@
 use matcomp::{assert_matrix_eq, ElementsMismatch};
-use matcomp::comparators::{ExactElementwiseComparator, ExactError};
+use matcomp::comparators::{ExactElementwiseComparator, ExactError, ElementwiseComparator};
 use matcomp::mock::MockDenseMatrix;
 use matcomp::{compare_matrices, DimensionMismatch, MatrixComparisonResult};
 use quickcheck::{quickcheck, TestResult};
@@ -40,6 +40,7 @@ fn compare_matrices_reports_correct_mismatches() {
     use matcomp::MatrixElementComparisonFailure;
 
     let comp = ExactElementwiseComparator;
+    let description = <ExactElementwiseComparator as ElementwiseComparator<usize>>::description(&comp);
 
     {
         // Single element matrices
@@ -47,7 +48,7 @@ fn compare_matrices_reports_correct_mismatches() {
         let ref y = MockDenseMatrix::from_row_major(1, 1, vec![2]);
 
         let expected = MismatchedElements(ElementsMismatch {
-            comparator: comp,
+            comparator_description: description.clone(),
             mismatches: vec![MatrixElementComparisonFailure {
                 x: 1,
                 y: 2,
@@ -82,7 +83,7 @@ fn compare_matrices_reports_correct_mismatches() {
         ];
 
         let expected = MismatchedElements(ElementsMismatch {
-            comparator: comp,
+            comparator_description: description.clone(),
             mismatches: mismatches,
         });
 
@@ -111,7 +112,7 @@ fn compare_matrices_reports_correct_mismatches() {
         ];
 
         let expected = MismatchedElements(ElementsMismatch{
-            comparator: comp,
+            comparator_description: description.clone(),
             mismatches: mismatches,
         });
 
@@ -141,7 +142,7 @@ fn compare_matrices_reports_correct_mismatches() {
         ];
 
         let expected = MismatchedElements(ElementsMismatch {
-            comparator: comp,
+            comparator_description: description.clone(),
             mismatches: mismatches,
         });
 
