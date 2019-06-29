@@ -14,10 +14,10 @@
 /// comparison of the two matrices.
 ///
 /// ```
-/// # #[macro_use] extern crate rulinalg; fn main() { let x = matrix![1.0f64]; let y = matrix![1.0f64];
+/// # use matcomp::{assert_matrix_eq, mock_matrix};
+/// # let x = mock_matrix![1.0f64]; let y = mock_matrix![1.0f64];
 /// // Performs elementwise exact comparison
 /// assert_matrix_eq!(x, y);
-/// # }
 /// ```
 ///
 /// An exact comparison is often not desirable. In particular, with floating point types,
@@ -25,14 +25,13 @@
 /// For this purpose, `assert_matrix_eq!` provides several comparators.
 ///
 /// ```
-/// # #[macro_use] extern crate rulinalg; fn main() {
-/// # let x = matrix![1.0f64]; let y = matrix![1.0f64];
+/// # use matcomp::{assert_matrix_eq, mock_matrix};
+/// # let x = mock_matrix![1.0f64]; let y = mock_matrix![1.0f64];
 /// // Available comparators:
 /// assert_matrix_eq!(x, y, comp = exact);
 /// assert_matrix_eq!(x, y, comp = float);
 /// assert_matrix_eq!(x, y, comp = abs, tol = 1e-12);
 /// assert_matrix_eq!(x, y, comp = ulp, tol = 8);
-/// # }
 /// ```
 /// **Note**: The `comp` argument *must* be specified after `x` and `y`, and cannot come
 /// after comparator-specific options. This is a deliberate design decision,
@@ -65,11 +64,10 @@
 /// The `max_eps` and `max_ulp` parameters can be tweaked to your preference with the syntax:
 ///
 /// ```
-/// # #[macro_use] extern crate rulinalg; fn main() {
-/// # let x = matrix![1.0f64]; let y = matrix![1.0f64];
+/// # use matcomp::{assert_matrix_eq, mock_matrix};
+/// # let x = mock_matrix![1.0f64]; let y = mock_matrix![1.0f64];
 /// # let max_eps = 1.0; let max_ulp = 0;
 /// assert_matrix_eq!(x, y, comp = float, eps = max_eps, ulp = max_ulp);
-/// # }
 /// ```
 ///
 /// These additional parameters can be specified in any order after the choice of comparator,
@@ -119,14 +117,13 @@
 /// useful error messages which help pinpoint the problems. For example, consider the example
 ///
 /// ```rust,should_panic
-/// #[macro_use]
-/// extern crate rulinalg;
+/// use matcomp::{assert_matrix_eq, mock_matrix};
 ///
 /// fn main() {
-///     let a = matrix![1.00, 2.00;
-///                     3.00, 4.00];
-///     let b = matrix![1.01, 2.00;
-///                     3.40, 4.00];
+///     let a = mock_matrix![1.00, 2.00;
+///                          3.00, 4.00];
+///     let b = mock_matrix![1.01, 2.00;
+///                          3.40, 4.00];
 ///     assert_matrix_eq!(a, b, comp = abs, tol = 1e-8);
 /// }
 /// ```
@@ -154,29 +151,21 @@
 /// # Examples
 ///
 /// ```
-/// #[macro_use]
-/// extern crate rulinalg;
-/// use rulinalg::matrix::Matrix;
+/// # use matcomp::{assert_matrix_eq, mock_matrix};
 ///
-/// # fn main() {
-/// let ref a = matrix![1, 2;
-///                 3, 4i64];
-/// let ref b = matrix![1, 3;
-///                 3, 4i64];
+/// let ref a = mock_matrix![1, 2;
+///                          3, 4i64];
+/// let ref b = mock_matrix![1, 3;
+///                          3, 4i64];
 ///
-/// let ref x = matrix![1.000, 2.000,
-///                 3.000, 4.000f64];
-/// let ref y = matrix![0.999, 2.001,
-///                 2.998, 4.000f64];
-///
+/// let ref x = mock_matrix![1.000, 2.000,
+///                          3.000, 4.000f64];
+/// let ref y = mock_matrix![0.999, 2.001,
+///                          2.998, 4.000f64];
 ///
 /// // comp = abs is also applicable to integers
 /// assert_matrix_eq!(a, b, comp = abs, tol = 1);
 /// assert_matrix_eq!(x, y, comp = abs, tol = 0.01);
-///
-/// assert_matrix_eq!(a * 2, a + a);
-/// assert_matrix_eq!(x * 2.0, x + x, comp = float);
-/// # }
 /// ```
 #[macro_export]
 macro_rules! assert_matrix_eq {
@@ -276,12 +265,11 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
 /// # Examples
 ///
 /// ```
-/// # #[macro_use] extern crate assert_matrix_eq; fn main() {
+/// # use matcomp::{assert_scalar_eq};
 /// let x = 3.00;
 /// let y = 3.05;
 /// // Assert that |x - y| <= 0.1
 /// assert_scalar_eq!(x, y, comp = abs, tol = 0.1);
-/// # }
 /// ```
 #[macro_export]
 macro_rules! assert_scalar_eq {
