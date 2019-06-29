@@ -43,7 +43,7 @@ pub trait DenseAccessor<T>: Matrix<T> {
     fn fetch_single(&self, row: usize, col: usize) -> T;
 }
 
-pub trait SparseAccessor<T> {
+pub trait SparseAccessor<T>: Matrix<T> {
     fn nnz(&self) -> usize;
     fn fetch_triplets(&self) -> Vec<(usize, usize, T)>;
 }
