@@ -6,8 +6,7 @@ use crate::{Accessor, DenseAccessor, Matrix, SparseAccessor};
 const MAX_MISMATCH_REPORTS: usize = 12;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct MatrixElementComparisonFailure<T, E>
-{
+pub struct MatrixElementComparisonFailure<T, E> {
     pub x: T,
     pub y: T,
     pub error: E,
@@ -41,25 +40,23 @@ where
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct DimensionMismatch {
     pub dim_x: (usize, usize),
-    pub dim_y: (usize, usize)
+    pub dim_y: (usize, usize),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OutOfBoundsIndices {
     pub indices_x: Vec<(usize, usize)>,
-    pub indices_y: Vec<(usize, usize)>
+    pub indices_y: Vec<(usize, usize)>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ElementsMismatch<T, Error>
-{
+pub struct ElementsMismatch<T, Error> {
     pub comparator_description: String,
-    pub mismatches: Vec<MatrixElementComparisonFailure<T, Error>>
+    pub mismatches: Vec<MatrixElementComparisonFailure<T, Error>>,
 }
 
 #[derive(Debug, PartialEq)]
-pub enum MatrixComparisonResult<T, Error>
-{
+pub enum MatrixComparisonResult<T, Error> {
     Match,
     MismatchedDimensions(DimensionMismatch),
     MismatchedElements(ElementsMismatch<T, Error>),
@@ -115,17 +112,19 @@ Comparison criterion: {description}
                     overflow_msg = overflow_msg
                 ))
             }
-            &MatrixComparisonResult::MismatchedDimensions(DimensionMismatch {dim_x, dim_y }) => Some(format!(
-                "\n
+            &MatrixComparisonResult::MismatchedDimensions(DimensionMismatch { dim_x, dim_y }) => {
+                Some(format!(
+                    "\n
 Dimensions of matrices X and Y do not match.
  dim(X) = {x_rows} x {x_cols}
  dim(Y) = {y_rows} x {y_cols}
 \n",
-                x_rows = dim_x.0,
-                x_cols = dim_x.1,
-                y_rows = dim_y.0,
-                y_cols = dim_y.1
-            )),
+                    x_rows = dim_x.0,
+                    x_cols = dim_x.1,
+                    y_rows = dim_y.0,
+                    y_cols = dim_y.1
+                ))
+            }
             _ => None,
         }
     }
@@ -166,18 +165,19 @@ Dimensions of matrices X and Y do not match.
 fn compare_dense_sparse<T, C>(
     x: &DenseAccessor<T>,
     y: &SparseAccessor<T>,
-    _comparator: &C
+    _comparator: &C,
 ) -> MatrixComparisonResult<T, C::Error>
-where T: Clone,
-      C: ElementwiseComparator<T>
+where
+    T: Clone,
+    C: ElementwiseComparator<T>,
 {
     // TODO: Delegate to function
     // We assume shapes are already handled by the outer calling function
     assert!(x.rows() == y.rows() && x.cols() == y.cols());
 
-//    let triplets = y.fetch_triplets();
+    //    let triplets = y.fetch_triplets();
 
-//    let hash_matrix = try_build_hash_map_from_triplets(&triplets);
+    //    let hash_matrix = try_build_hash_map_from_triplets(&triplets);
 
     unimplemented!()
 }
@@ -215,7 +215,10 @@ where
     if mismatches.is_empty() {
         MatrixComparisonResult::Match
     } else {
-        MatrixComparisonResult::MismatchedElements(ElementsMismatch { comparator_description: comparator.description(), mismatches })
+        MatrixComparisonResult::MismatchedElements(ElementsMismatch {
+            comparator_description: comparator.description(),
+            mismatches,
+        })
     }
 }
 
@@ -252,7 +255,7 @@ where
         let result = match (x.access(), y.access()) {
             (Dense(x_access), Dense(y_access)) => {
                 compare_dense_dense(x_access, y_access, comparator)
-            },
+            }
             (Dense(x_access), Sparse(y_access)) => {
                 compare_dense_sparse(x_access, y_access, &comparator)
             }

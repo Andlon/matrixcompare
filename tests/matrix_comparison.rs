@@ -1,6 +1,6 @@
-use matcomp::{assert_matrix_eq, ElementsMismatch};
-use matcomp::comparators::{ExactElementwiseComparator, ExactError, ElementwiseComparator};
+use matcomp::comparators::{ElementwiseComparator, ExactElementwiseComparator, ExactError};
 use matcomp::mock::MockDenseMatrix;
+use matcomp::{assert_matrix_eq, ElementsMismatch};
 use matcomp::{compare_matrices, DimensionMismatch, MatrixComparisonResult};
 use quickcheck::{quickcheck, TestResult};
 
@@ -40,7 +40,8 @@ fn compare_matrices_reports_correct_mismatches() {
     use matcomp::MatrixElementComparisonFailure;
 
     let comp = ExactElementwiseComparator;
-    let description = <ExactElementwiseComparator as ElementwiseComparator<usize>>::description(&comp);
+    let description =
+        <ExactElementwiseComparator as ElementwiseComparator<usize>>::description(&comp);
 
     {
         // Single element matrices
@@ -111,7 +112,7 @@ fn compare_matrices_reports_correct_mismatches() {
             },
         ];
 
-        let expected = MismatchedElements(ElementsMismatch{
+        let expected = MismatchedElements(ElementsMismatch {
             comparator_description: description.clone(),
             mismatches: mismatches,
         });

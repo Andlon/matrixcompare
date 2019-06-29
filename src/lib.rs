@@ -21,8 +21,8 @@ pub mod ulp;
 pub mod mock;
 
 pub use self::matrix_comparison::{
-    compare_matrices, MatrixComparisonResult, MatrixElementComparisonFailure,
-    DimensionMismatch, OutOfBoundsIndices, ElementsMismatch
+    compare_matrices, DimensionMismatch, ElementsMismatch, MatrixComparisonResult,
+    MatrixElementComparisonFailure, OutOfBoundsIndices,
 };
 pub use self::scalar_comparison::{
     compare_scalars, ScalarComparisonFailure, ScalarComparisonResult,
