@@ -7,8 +7,6 @@ const MAX_MISMATCH_REPORTS: usize = 12;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct MatrixElementComparisonFailure<T, E>
-where
-    E: ComparisonFailure,
 {
     pub x: T,
     pub y: T,
@@ -40,20 +38,33 @@ where
     }
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct DimensionMismatch {
+    pub dim_x: (usize, usize),
+    pub dim_y: (usize, usize)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OutOfBoundsIndices {
+    pub indices_x: Vec<(usize, usize)>,
+    pub indices_y: Vec<(usize, usize)>
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ElementsMismatch<T, Comparator, Error>
+{
+    pub comparator: Comparator,
+    pub mismatches: Vec<MatrixElementComparisonFailure<T, Error>>
+}
+
 #[derive(Debug, PartialEq)]
 pub enum MatrixComparisonResult<T, C>
 where
     C: ElementwiseComparator<T>,
 {
     Match,
-    MismatchedDimensions {
-        dim_x: (usize, usize),
-        dim_y: (usize, usize),
-    },
-    MismatchedElements {
-        comparator: C,
-        mismatches: Vec<MatrixElementComparisonFailure<T, C::Error>>,
-    },
+    MismatchedDimensions(DimensionMismatch),
+    MismatchedElements(ElementsMismatch<T, C, C::Error>),
 }
 
 impl<T, C> MatrixComparisonResult<T, C>
@@ -63,10 +74,10 @@ where
 {
     pub fn panic_message(&self) -> Option<String> {
         match self {
-            &MatrixComparisonResult::MismatchedElements {
+            &MatrixComparisonResult::MismatchedElements(ElementsMismatch {
                 ref comparator,
                 ref mismatches,
-            } => {
+            }) => {
                 // TODO: Aligned output
                 let mut formatted_mismatches = String::new();
 
@@ -106,7 +117,7 @@ Comparison criterion: {description}
                     overflow_msg = overflow_msg
                 ))
             }
-            &MatrixComparisonResult::MismatchedDimensions { dim_x, dim_y } => Some(format!(
+            &MatrixComparisonResult::MismatchedDimensions(DimensionMismatch {dim_x, dim_y }) => Some(format!(
                 "\n
 Dimensions of matrices X and Y do not match.
  dim(X) = {x_rows} x {x_cols}
@@ -180,9 +191,9 @@ where
             }
         }
     } else {
-        MatrixComparisonResult::MismatchedDimensions {
+        MatrixComparisonResult::MismatchedDimensions(DimensionMismatch {
             dim_x: (x.rows(), x.cols()),
             dim_y: (y.rows(), y.cols()),
-        }
+        })
     }
 }

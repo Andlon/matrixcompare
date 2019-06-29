@@ -1,7 +1,7 @@
-use matcomp::assert_matrix_eq;
+use matcomp::{assert_matrix_eq, ElementsMismatch};
 use matcomp::comparators::{ExactElementwiseComparator, ExactError};
 use matcomp::mock::MockDenseMatrix;
-use matcomp::{compare_matrices, MatrixComparisonResult};
+use matcomp::{compare_matrices, DimensionMismatch, MatrixComparisonResult};
 use quickcheck::{quickcheck, TestResult};
 
 quickcheck! {
@@ -19,7 +19,7 @@ quickcheck! {
         let ref x = MockDenseMatrix::from_row_major(m, n, vec![0; m * n]);
         let ref y = MockDenseMatrix::from_row_major(p, q, vec![0; p * q]);
 
-        let expected = MatrixComparisonResult::MismatchedDimensions { dim_x: (m, n), dim_y: (p, q) };
+        let expected = MatrixComparisonResult::MismatchedDimensions(DimensionMismatch { dim_x: (m, n), dim_y: (p, q) });
 
         TestResult::from_bool(compare_matrices(x, y, comp) == expected)
     }
@@ -46,7 +46,7 @@ fn compare_matrices_reports_correct_mismatches() {
         let ref x = MockDenseMatrix::from_row_major(1, 1, vec![1]);
         let ref y = MockDenseMatrix::from_row_major(1, 1, vec![2]);
 
-        let expected = MismatchedElements {
+        let expected = MismatchedElements(ElementsMismatch {
             comparator: comp,
             mismatches: vec![MatrixElementComparisonFailure {
                 x: 1,
@@ -55,7 +55,7 @@ fn compare_matrices_reports_correct_mismatches() {
                 row: 0,
                 col: 0,
             }],
-        };
+        });
 
         assert_eq!(compare_matrices(x, y, comp), expected);
     }
@@ -81,10 +81,10 @@ fn compare_matrices_reports_correct_mismatches() {
             },
         ];
 
-        let expected = MismatchedElements {
+        let expected = MismatchedElements(ElementsMismatch {
             comparator: comp,
             mismatches: mismatches,
-        };
+        });
 
         assert_eq!(compare_matrices(x, y, comp), expected);
     }
@@ -110,10 +110,10 @@ fn compare_matrices_reports_correct_mismatches() {
             },
         ];
 
-        let expected = MismatchedElements {
+        let expected = MismatchedElements(ElementsMismatch{
             comparator: comp,
             mismatches: mismatches,
-        };
+        });
 
         assert_eq!(compare_matrices(x, y, comp), expected);
     }
@@ -140,10 +140,10 @@ fn compare_matrices_reports_correct_mismatches() {
             },
         ];
 
-        let expected = MismatchedElements {
+        let expected = MismatchedElements(ElementsMismatch {
             comparator: comp,
             mismatches: mismatches,
-        };
+        });
 
         assert_eq!(compare_matrices(x, y, comp), expected);
     }
