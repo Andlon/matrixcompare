@@ -2,8 +2,8 @@ use std::fmt;
 
 use crate::comparators::{ComparisonFailure, ElementwiseComparator};
 use crate::{Accessor, DenseAccessor, Matrix, SparseAccessor};
-use std::collections::{HashMap, HashSet};
 use num::Zero;
+use std::collections::{HashMap, HashSet};
 
 const MAX_MISMATCH_REPORTS: usize = 12;
 
@@ -69,7 +69,7 @@ pub enum MatrixComparisonResult<T, Error> {
     MismatchedDimensions(DimensionMismatch),
     MismatchedElements(ElementsMismatch<T, Error>),
     SparseIndicesOutOfBounds(OutOfBoundsIndices),
-    DuplicateSparseEntries(DuplicateEntries<T>)
+    DuplicateSparseEntries(DuplicateEntries<T>),
 }
 
 impl<T, Error> MatrixComparisonResult<T, Error>
@@ -136,8 +136,12 @@ Dimensions of matrices X and Y do not match.
                 ))
             }
             // TODO
-            &MatrixComparisonResult::SparseIndicesOutOfBounds(ref _out_of_bounds) => Some("TODO: Error for out of bounds".to_string()),
-            &MatrixComparisonResult::DuplicateSparseEntries(ref _duplicate) => Some("TODO: Error for duplicate entries".to_string()),
+            &MatrixComparisonResult::SparseIndicesOutOfBounds(ref _out_of_bounds) => {
+                Some("TODO: Error for out of bounds".to_string())
+            }
+            &MatrixComparisonResult::DuplicateSparseEntries(ref _duplicate) => {
+                Some("TODO: Error for duplicate entries".to_string())
+            }
             &MatrixComparisonResult::Match => None,
         }
     }
@@ -145,17 +149,21 @@ Dimensions of matrices X and Y do not match.
 
 type DuplicateEntriesMap<T> = HashMap<(usize, usize), Vec<T>>;
 
-fn try_build_hash_map_from_triplets<T>(triplets: &[(usize, usize, T)])
-    -> Result<HashMap<(usize, usize), T>, DuplicateEntriesMap<T>>
+fn try_build_hash_map_from_triplets<T>(
+    triplets: &[(usize, usize, T)],
+) -> Result<HashMap<(usize, usize), T>, DuplicateEntriesMap<T>>
 where
-    T: Clone
+    T: Clone,
 {
     let mut duplicates = DuplicateEntriesMap::new();
     let mut matrix = HashMap::new();
 
     for (i, j, v) in triplets.iter().cloned() {
         if let Some(old_entry) = matrix.insert((i, j), v) {
-            duplicates.entry((i, j)).or_insert_with(|| Vec::new()).push(old_entry);
+            duplicates
+                .entry((i, j))
+                .or_insert_with(|| Vec::new())
+                .push(old_entry);
         }
     }
 
@@ -165,10 +173,10 @@ where
         // If there are duplicates, we must also be sure to update the duplicates map with
         // the duplicate entries that are still in the matrix hash map
         for (key, ref mut values) in &mut duplicates {
-            values.push(matrix.get(key)
-                              .cloned()
-                              .expect("Entry (i, j) must be in the map,\
-                                        otherwise it wouldn't be in duplicates"));
+            values.push(matrix.get(key).cloned().expect(
+                "Entry (i, j) must be in the map,\
+                 otherwise it wouldn't be in duplicates",
+            ));
         }
 
         Err(duplicates)
@@ -180,9 +188,9 @@ fn compare_sparse_sparse<T, C>(
     y: &SparseAccessor<T>,
     comparator: &C,
 ) -> MatrixComparisonResult<T, C::Error>
-    where
-        T: Zero + Clone,
-        C: ElementwiseComparator<T>,
+where
+    T: Zero + Clone,
+    C: ElementwiseComparator<T>,
 {
     // We assume the compatibility of dimensions have been checked by the outer calling function
     assert!(x.rows() == y.rows() && x.cols() == y.cols());
@@ -196,7 +204,7 @@ fn compare_sparse_sparse<T, C>(
     if !x_out_of_bounds.is_empty() || !y_out_of_bounds.is_empty() {
         MatrixComparisonResult::SparseIndicesOutOfBounds(OutOfBoundsIndices {
             indices_x: x_out_of_bounds,
-            indices_y: y_out_of_bounds
+            indices_y: y_out_of_bounds,
         })
     } else {
         let x_hash = try_build_hash_map_from_triplets(&x_triplets);
@@ -206,7 +214,8 @@ fn compare_sparse_sparse<T, C>(
             let x_duplicates = x_hash.err().unwrap_or(HashMap::new());
             let y_duplicates = y_hash.err().unwrap_or(HashMap::new());
             MatrixComparisonResult::DuplicateSparseEntries(DuplicateEntries {
-                x_duplicates, y_duplicates
+                x_duplicates,
+                y_duplicates,
             })
         } else {
             let mut mismatches = Vec::new();
@@ -240,14 +249,13 @@ fn compare_sparse_sparse<T, C>(
             }
         }
     }
-
-
 }
 
-fn find_out_of_bounds_indices<T>(rows: usize, cols: usize,
-                                 triplets: &[(usize, usize, T)])
-    -> Vec<(usize, usize)>
-{
+fn find_out_of_bounds_indices<T>(
+    rows: usize,
+    cols: usize,
+    triplets: &[(usize, usize, T)],
+) -> Vec<(usize, usize)> {
     triplets
         .iter()
         .filter(|&(i, j, _)| i > &rows || j > &cols)
@@ -273,14 +281,15 @@ where
     if !y_out_of_bounds.is_empty() {
         MatrixComparisonResult::SparseIndicesOutOfBounds(OutOfBoundsIndices {
             indices_x: Vec::new(),
-            indices_y: y_out_of_bounds
+            indices_y: y_out_of_bounds,
         })
     } else {
         let y_hash = try_build_hash_map_from_triplets(&y_triplets);
 
         if let Err(y_duplicates) = y_hash {
             MatrixComparisonResult::DuplicateSparseEntries(DuplicateEntries {
-                x_duplicates: HashMap::new(), y_duplicates
+                x_duplicates: HashMap::new(),
+                y_duplicates,
             })
         } else {
             let mut mismatches = Vec::new();
@@ -355,7 +364,7 @@ where
 }
 
 struct ReverseComparatorAdapter<'a, C> {
-    comparator: &'a C
+    comparator: &'a C,
 }
 
 impl<'a, C> ReverseComparatorAdapter<'a, C> {
@@ -365,7 +374,8 @@ impl<'a, C> ReverseComparatorAdapter<'a, C> {
 }
 
 impl<'a, C, T> ElementwiseComparator<T> for ReverseComparatorAdapter<'a, C>
-    where C: ElementwiseComparator<T>
+where
+    C: ElementwiseComparator<T>,
 {
     type Error = C::Error;
 
@@ -397,9 +407,11 @@ where
             (Dense(x_access), Sparse(y_access)) => {
                 compare_dense_sparse(x_access, y_access, comparator)
             }
-            (Sparse(x_access), Dense(y_access)) => {
-                compare_dense_sparse(y_access, x_access, &ReverseComparatorAdapter::new(comparator))
-            }
+            (Sparse(x_access), Dense(y_access)) => compare_dense_sparse(
+                y_access,
+                x_access,
+                &ReverseComparatorAdapter::new(comparator),
+            ),
             (Sparse(x_access), Sparse(y_access)) => {
                 compare_sparse_sparse(x_access, y_access, comparator)
             }
