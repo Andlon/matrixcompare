@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::comparators::{ComparisonFailure, ElementwiseComparator};
-use crate::{Accessor, DenseAccessor, Matrix};
+use crate::{Accessor, DenseAccessor, Matrix, SparseAccessor};
 
 const MAX_MISMATCH_REPORTS: usize = 12;
 
@@ -133,15 +133,68 @@ Dimensions of matrices X and Y do not match.
     }
 }
 
-fn fetch_dense_dense_mismatches<T, C>(
+//type DuplicateEntriesMap<T> = HashMap<(usize, usize), Vec<T>>;
+
+//fn try_build_hash_map_from_triplets<T>(triplets: &[(usize, usize, T)])
+//    -> Result<HashMap<(usize, usize), T>, DuplicateEntriesMap<T>>
+//where
+//    T: Clone
+//{
+//    let mut duplicates = DuplicateEntriesMap::new();
+//    let mut matrix = HashMap::new();
+//
+//    for (i, j, v) in triplets.iter().cloned() {
+//        if let Some(old_entry) = matrix.insert((i, j), v) {
+//            duplicates.entry((i, j)).or_insert_with(|| Vec::new()).push(old_entry);
+//        }
+//    }
+//
+//    if duplicates.is_empty() {
+//        Ok(matrix)
+//    } else {
+//        // If there are duplicates, we must also be sure to update the duplicates map with
+//        // the duplicate entries that are still in the matrix hash map
+//        for (key, ref mut values) in &mut duplicates {
+//            values.push(matrix.get(key)
+//                              .cloned()
+//                              .expect("Entry (i, j) must be in the map,\
+//                                        otherwise it wouldn't be in duplicates"));
+//        }
+//
+//        Err(duplicates)
+//    }
+//}
+
+fn compare_dense_sparse<T, C>(
+    x: &DenseAccessor<T>,
+    y: &SparseAccessor<T>,
+    _comparator: &C
+) -> MatrixComparisonResult<T, C>
+where T: Clone,
+      C: ElementwiseComparator<T>
+{
+    // TODO: Delegate to function
+    // We assume shapes are already handled by the outer calling function
+    assert!(x.rows() == y.rows() && x.cols() == y.cols());
+
+//    let triplets = y.fetch_triplets();
+
+//    let hash_matrix = try_build_hash_map_from_triplets(&triplets);
+
+    unimplemented!()
+}
+
+fn compare_dense_dense<T, C>(
     x: &DenseAccessor<T>,
     y: &DenseAccessor<T>,
-    comparator: &C,
-) -> Vec<MatrixElementComparisonFailure<T, C::Error>>
+    comparator: C,
+) -> MatrixComparisonResult<T, C>
 where
     T: Clone,
     C: ElementwiseComparator<T>,
 {
+    // TODO: Rewrite this so that we instead delegate to a function
+    // We assume the compatibility of dimensions have been checked by the outer calling function
     assert!(x.rows() == y.rows() && x.cols() == y.cols());
 
     let mut mismatches = Vec::new();
@@ -160,8 +213,31 @@ where
             }
         }
     }
-    mismatches
+
+    if mismatches.is_empty() {
+        MatrixComparisonResult::Match
+    } else {
+        MatrixComparisonResult::MismatchedElements(ElementsMismatch {comparator, mismatches })
+    }
 }
+
+//struct ReverseComparatorAdapter<C> {
+//    comparator: C
+//}
+//
+//impl<C, T> ElementwiseComparator<T> for ReverseComparatorAdapter<C>
+//    where C: ElementwiseComparator<T>
+//{
+//    type Error = C::Error;
+//
+//    fn compare(&self, x: &T, y: &T) -> Result<(), C::Error> {
+//        self.comparator.compare(y, x)
+//    }
+//
+//    fn description(&self) -> String {
+//        self.comparator.description()
+//    }
+//}
 
 pub fn compare_matrices<T, C>(
     x: impl Matrix<T>,
@@ -174,22 +250,17 @@ where
 {
     let shapes_match = x.rows() == y.rows() && x.cols() == y.cols();
     if shapes_match {
-        use Accessor::Dense;
-        let mismatches = match (x.access(), y.access()) {
+        use Accessor::{Dense, Sparse};
+        let result = match (x.access(), y.access()) {
             (Dense(x_access), Dense(y_access)) => {
-                fetch_dense_dense_mismatches(x_access, y_access, &comparator)
+                compare_dense_dense(x_access, y_access, comparator)
+            },
+            (Dense(x_access), Sparse(y_access)) => {
+                compare_dense_sparse(x_access, y_access, &comparator)
             }
             _ => unimplemented!(),
         };
-
-        if mismatches.is_empty() {
-            MatrixComparisonResult::Match
-        } else {
-            MatrixComparisonResult::MismatchedElements {
-                comparator,
-                mismatches,
-            }
-        }
+        result
     } else {
         MatrixComparisonResult::MismatchedDimensions(DimensionMismatch {
             dim_x: (x.rows(), x.cols()),
