@@ -77,3 +77,30 @@ impl<T: Clone> SparseAccessor<T> for MockSparseMatrix<T> {
         self.triplets.clone()
     }
 }
+
+/// Macro that helps with the construction of small dense (mock) matrices for testing.
+///
+/// Originally lifted from the `rulinalg` crate (author being the same as for this crate).
+#[macro_export]
+macro_rules! mock_matrix {
+    () => {
+        {
+            // Handle the case when called with no arguments, i.e. matrix![]
+            use $crate::mock::MockDenseMatrix;
+            MockDenseMatrix::from_row_major(0, 0, vec![])
+        }
+    };
+    ($( $( $x: expr ),*);*) => {
+        {
+            use $crate::mock::MockDenseMatrix;
+            let data_as_nested_array = [ $( [ $($x),* ] ),* ];
+            let rows = data_as_nested_array.len();
+            let cols = data_as_nested_array[0].len();
+            let data_as_flat_array: Vec<_> = data_as_nested_array.into_iter()
+                .flat_map(|row| row.into_iter())
+                .cloned()
+                .collect();
+            MockDenseMatrix::from_row_major(rows, cols, data_as_flat_array)
+        }
+    }
+}

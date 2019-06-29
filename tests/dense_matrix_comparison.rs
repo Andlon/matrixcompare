@@ -1,6 +1,6 @@
 use matcomp::comparators::{ElementwiseComparator, ExactElementwiseComparator, ExactError};
-use matcomp::mock::MockDenseMatrix;
-use matcomp::{assert_matrix_eq, ElementsMismatch};
+use matcomp::mock::{MockDenseMatrix};
+use matcomp::{assert_matrix_eq, ElementsMismatch, mock_matrix};
 use matcomp::{compare_matrices, DimensionMismatch, MatrixComparisonResult};
 use quickcheck::{quickcheck, TestResult};
 
@@ -93,8 +93,12 @@ fn compare_matrices_reports_correct_mismatches() {
 
     {
         // Mismatch in top-left and bottom-corner elements for a tall matrix
-        let ref x = MockDenseMatrix::from_row_major(3, 2, vec![0, 1, 2, 3, 4, 5]);
-        let ref y = MockDenseMatrix::from_row_major(3, 2, vec![1, 1, 2, 3, 4, 6]);
+        let ref x = mock_matrix![ 0, 1;
+                                  2, 3;
+                                  4, 5 ];
+        let ref y = mock_matrix![ 1, 1;
+                                  2, 3;
+                                  4, 6 ];
         let mismatches = vec![
             MatrixElementComparisonFailure {
                 x: 0,
