@@ -21,7 +21,7 @@ quickcheck! {
 
         let expected = MatrixComparisonResult::MismatchedDimensions(DimensionMismatch { dim_x: (m, n), dim_y: (p, q) });
 
-        TestResult::from_bool(compare_matrices(x, y, comp) == expected)
+        TestResult::from_bool(compare_matrices(x, y, &comp) == expected)
     }
 }
 
@@ -30,7 +30,7 @@ quickcheck! {
         let comp = ExactElementwiseComparator;
         let ref x = MockDenseMatrix::from_row_major(m, n, vec![0; m * n]);
 
-        compare_matrices(x, x, comp) == MatrixComparisonResult::Match
+        compare_matrices(x, x, &comp) == MatrixComparisonResult::Match
     }
 }
 
@@ -59,7 +59,7 @@ fn compare_matrices_reports_correct_mismatches() {
             }],
         });
 
-        assert_eq!(compare_matrices(x, y, comp), expected);
+        assert_eq!(compare_matrices(x, y, &comp), expected);
     }
 
     {
@@ -88,7 +88,7 @@ fn compare_matrices_reports_correct_mismatches() {
             mismatches: mismatches,
         });
 
-        assert_eq!(compare_matrices(x, y, comp), expected);
+        assert_eq!(compare_matrices(x, y, &comp), expected);
     }
 
     {
@@ -117,7 +117,7 @@ fn compare_matrices_reports_correct_mismatches() {
             mismatches: mismatches,
         });
 
-        assert_eq!(compare_matrices(x, y, comp), expected);
+        assert_eq!(compare_matrices(x, y, &comp), expected);
     }
 
     {
@@ -147,7 +147,7 @@ fn compare_matrices_reports_correct_mismatches() {
             mismatches: mismatches,
         });
 
-        assert_eq!(compare_matrices(x, y, comp), expected);
+        assert_eq!(compare_matrices(x, y, &comp), expected);
     }
 }
 

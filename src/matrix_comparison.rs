@@ -185,7 +185,7 @@ where
 fn compare_dense_dense<T, C>(
     x: &DenseAccessor<T>,
     y: &DenseAccessor<T>,
-    comparator: C,
+    comparator: &C,
 ) -> MatrixComparisonResult<T, C::Error>
 where
     T: Clone,
@@ -243,7 +243,7 @@ where
 pub fn compare_matrices<T, C>(
     x: impl Matrix<T>,
     y: impl Matrix<T>,
-    comparator: C,
+    comparator: &C,
 ) -> MatrixComparisonResult<T, C::Error>
 where
     T: Clone,
@@ -257,7 +257,7 @@ where
                 compare_dense_dense(x_access, y_access, comparator)
             }
             (Dense(x_access), Sparse(y_access)) => {
-                compare_dense_sparse(x_access, y_access, &comparator)
+                compare_dense_sparse(x_access, y_access, comparator)
             }
             _ => unimplemented!(),
         };
