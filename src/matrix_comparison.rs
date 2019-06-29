@@ -407,11 +407,10 @@ where
             (Dense(x_access), Sparse(y_access)) => {
                 compare_dense_sparse(x_access, y_access, comparator)
             }
-            (Sparse(x_access), Dense(y_access)) => compare_dense_sparse(
-                y_access,
-                x_access,
-                &ReverseComparatorAdapter::new(comparator),
-            ),
+            (Sparse(x_access), Dense(y_access)) => {
+                let reversed_comparator = ReverseComparatorAdapter::new(comparator);
+                compare_dense_sparse(y_access, x_access, &reversed_comparator)
+            }
             (Sparse(x_access), Sparse(y_access)) => {
                 compare_sparse_sparse(x_access, y_access, comparator)
             }
