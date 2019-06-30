@@ -289,18 +289,3 @@ proptest! {
         prop_assert_eq!(result1.clone(), result2);
     }
 }
-
-#[test]
-fn temp_mismatch_test() {
-    let mismatch1 = DimensionMismatch {
-        dim_x: (4, 2),
-        dim_y: (2, 4)
-    };
-
-    let mismatch2 = DimensionMismatch {
-        dim_x: (2, 4),
-        dim_y: (4, 2)
-    };
-
-    assert_eq!(mismatch1, mismatch2)
-}
