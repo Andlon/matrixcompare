@@ -10,3 +10,4 @@ num = "0.2"
 [dev-dependencies]
 quickcheck = "0.8.3"
 matrixcompare-mock = { path = "matrixcompare-mock" }
+proptest = "0.9"

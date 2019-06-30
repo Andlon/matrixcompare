@@ -12,3 +12,4 @@ publish = false
 num = "0.2"
 matrixcompare = { path = ".." }
 proptest = "0.9"
+
