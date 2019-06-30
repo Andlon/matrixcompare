@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 505efb3798cd62fe3eec04fba8621bae1e0bdcf3b68948d5437a3412c037323c # shrinks to dense1 = MockDenseMatrix { data: [], rows: 0, cols: 0 }, dense2 = MockDenseMatrix { data: [], rows: 0, cols: 1 }

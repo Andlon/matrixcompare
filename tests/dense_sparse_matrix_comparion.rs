@@ -3,9 +3,9 @@ use matrixcompare::comparators::ExactElementwiseComparator;
 use matrixcompare_mock::{dense_matrix_strategy_i64, sparse_matrix_strategy_i64,
                          dense_matrix_strategy_normal_f64, sparse_matrix_strategy_normal_f64};
 use proptest::prelude::*;
-use std::ops::Range;
 
-const MATRIX_DIM_RANGE: Range<usize> = 0..5;
+mod common;
+use common::MATRIX_DIM_RANGE;
 
 
 proptest! {

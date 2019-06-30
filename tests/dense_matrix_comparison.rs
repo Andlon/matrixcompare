@@ -6,6 +6,9 @@ use quickcheck::{quickcheck, TestResult};
 
 use proptest::prelude::*;
 
+mod common;
+use common::MATRIX_DIM_RANGE;
+
 quickcheck! {
     fn property_elementwise_comparison_incompatible_matrices_yield_dimension_mismatch(
         m: usize,
@@ -275,7 +278,7 @@ proptest! {
     #[test]
     fn dense_dense_comparison_is_symmetric_for_compatible_matrices_i64(
         // Generate two dense matrices which have the same dimensions
-        (dense1, dense2) in (0usize..5, 0usize..5).prop_flat_map(|(r, c)| {
+        (dense1, dense2) in (MATRIX_DIM_RANGE, MATRIX_DIM_RANGE).prop_flat_map(|(r, c)| {
             (dense_matrix_strategy_i64(r..=r, c..=c), dense_matrix_strategy_i64(r..=r, c..=c))
         })
     ) {
@@ -286,6 +289,19 @@ proptest! {
         // TODO: Create issue in proptest repo for the fact that prop_assert_eq! moves objects,
         // whereas assert_eq! does not
         prop_assert_eq!(result1.clone(), result2.clone().reverse());
-        prop_assert_eq!(result1.clone(), result2);
+        prop_assert_eq!(result1.reverse(), result2);
+    }
+
+    #[test]
+    fn dense_dense_comparison_is_symmetric_for_all_matrices_i64(
+        // Generate two dense matrices which have the same dimensions
+        dense1 in dense_matrix_strategy_i64(MATRIX_DIM_RANGE, MATRIX_DIM_RANGE),
+        dense2 in dense_matrix_strategy_i64(MATRIX_DIM_RANGE, MATRIX_DIM_RANGE)
+    ) {
+        let c = ExactElementwiseComparator;
+        let result1 = compare_matrices(&dense1, &dense2, &c);
+        let result2 = compare_matrices(&dense2, &dense1, &c);
+        prop_assert_eq!(result1.clone(), result2.clone().reverse());
+        prop_assert_eq!(result1.reverse(), result2);
     }
 }
