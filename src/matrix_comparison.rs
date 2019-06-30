@@ -331,6 +331,7 @@ fn compare_dense_sparse<T, C>(
     x: &DenseAccessor<T>,
     y: &SparseAccessor<T>,
     comparator: &C,
+    swap_order: bool
 ) -> MatrixComparisonResult<T, C::Error>
 where
     T: Zero + Clone,
@@ -362,9 +363,10 @@ where
 
             for i in 0..x.rows() {
                 for j in 0..x.cols() {
-                    let a = x.fetch_single(i, j);
+                    let a = &x.fetch_single(i, j);
                     let b = y_hash.get(&(i, j)).unwrap_or(&zero);
-                    if let Err(error) = comparator.compare(&a, &b) {
+                    let (a, b) = if swap_order { (b, a) } else { (a, b) };
+                    if let Err(error) = comparator.compare(a, b) {
                         mismatches.push(MatrixElementComparisonFailure {
                             x: a.clone(),
                             y: b.clone(),
@@ -427,31 +429,6 @@ where
     }
 }
 
-struct ReverseComparatorAdapter<'a, C> {
-    comparator: &'a C,
-}
-
-impl<'a, C> ReverseComparatorAdapter<'a, C> {
-    pub fn new(comparator: &'a C) -> Self {
-        Self { comparator }
-    }
-}
-
-impl<'a, C, T> ElementwiseComparator<T> for ReverseComparatorAdapter<'a, C>
-where
-    C: ElementwiseComparator<T>,
-{
-    type Error = C::Error;
-
-    fn compare(&self, x: &T, y: &T) -> Result<(), C::Error> {
-        self.comparator.compare(y, x)
-    }
-
-    fn description(&self) -> String {
-        self.comparator.description()
-    }
-}
-
 pub fn compare_matrices<T, C>(
     x: impl Matrix<T>,
     y: impl Matrix<T>,
@@ -469,11 +446,12 @@ where
                 compare_dense_dense(x_access, y_access, comparator)
             }
             (Dense(x_access), Sparse(y_access)) => {
-                compare_dense_sparse(x_access, y_access, comparator)
+                let swap = false;
+                compare_dense_sparse(x_access, y_access, comparator, swap)
             }
             (Sparse(x_access), Dense(y_access)) => {
-                let reversed_comparator = ReverseComparatorAdapter::new(comparator);
-                compare_dense_sparse(y_access, x_access, &reversed_comparator)
+                let swap = true;
+                compare_dense_sparse(y_access, x_access, comparator, swap)
             }
             (Sparse(x_access), Sparse(y_access)) => {
                 compare_sparse_sparse(x_access, y_access, comparator)
