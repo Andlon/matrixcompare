@@ -4,7 +4,6 @@
 
 use matrixcompare::{Accessor, DenseAccessor, Matrix, SparseAccessor};
 use proptest::prelude::*;
-use std::ops::Range;
 use std::fmt::Debug;
 
 use num::Zero;
@@ -146,8 +145,8 @@ macro_rules! mock_matrix {
     }
 }
 
-pub fn dense_matrix_strategy<T, S>(rows: Range<usize>,
-                               cols: Range<usize>,
+pub fn dense_matrix_strategy<T, S>(rows: impl Strategy<Value=usize>,
+                                   cols: impl Strategy<Value=usize>,
                                strategy: S)
     -> impl Strategy<Value=MockDenseMatrix<T>>
 where
@@ -160,18 +159,18 @@ where
     })
 }
 
-pub fn dense_matrix_strategy_i64(rows: Range<usize>, cols: Range<usize>)
+pub fn dense_matrix_strategy_i64(rows: impl Strategy<Value=usize>, cols: impl Strategy<Value=usize>)
     -> impl Strategy<Value=MockDenseMatrix<i64>> {
     dense_matrix_strategy(rows, cols, proptest::num::i64::ANY)
 }
 
 /// A strategy for "normal" f64 numbers (excluding infinities, NaN).
-pub fn dense_matrix_strategy_normal_f64(rows: Range<usize>, cols: Range<usize>)
+pub fn dense_matrix_strategy_normal_f64(rows: impl Strategy<Value=usize>, cols: impl Strategy<Value=usize>)
                                    -> impl Strategy<Value=MockDenseMatrix<f64>> {
     dense_matrix_strategy(rows, cols, proptest::num::f64::NORMAL)
 }
 
-pub fn sparse_matrix_strategy<T, S>(rows: Range<usize>, cols: Range<usize>, strategy: S)
+pub fn sparse_matrix_strategy<T, S>(rows: impl Strategy<Value=usize>, cols: impl Strategy<Value=usize>, strategy: S)
     -> impl Strategy<Value = MockSparseMatrix<T>>
 where T: Debug,
       S: Clone + Strategy<Value = T>
@@ -191,13 +190,13 @@ where T: Debug,
     })
 }
 
-pub fn sparse_matrix_strategy_i64(rows: Range<usize>, cols: Range<usize>)
+pub fn sparse_matrix_strategy_i64(rows: impl Strategy<Value=usize>, cols: impl Strategy<Value=usize>)
     -> impl Strategy<Value=MockSparseMatrix<i64>>
 {
     sparse_matrix_strategy(rows, cols, proptest::num::i64::ANY)
 }
 
-pub fn sparse_matrix_strategy_normal_f64(rows: Range<usize>, cols: Range<usize>)
+pub fn sparse_matrix_strategy_normal_f64(rows: impl Strategy<Value=usize>, cols: impl Strategy<Value=usize>)
                                   -> impl Strategy<Value=MockSparseMatrix<f64>>
 {
     sparse_matrix_strategy(rows, cols, proptest::num::f64::NORMAL)

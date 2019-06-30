@@ -16,6 +16,18 @@ pub struct MatrixElementComparisonFailure<T, E> {
     pub col: usize,
 }
 
+impl<T, E> MatrixElementComparisonFailure<T, E> {
+    pub fn reverse(self) -> Self {
+        Self {
+            x: self.y,
+            y: self.x,
+            error: self.error,
+            row: self.row,
+            col: self.col
+        }
+    }
+}
+
 impl<T, E> fmt::Display for MatrixElementComparisonFailure<T, E>
 where
     T: fmt::Display,
@@ -45,10 +57,28 @@ pub struct DimensionMismatch {
     pub dim_y: (usize, usize),
 }
 
+impl DimensionMismatch {
+    pub fn reverse(self) -> Self {
+        Self {
+            dim_x: self.dim_y,
+            dim_y: self.dim_x
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OutOfBoundsIndices {
     pub indices_x: Vec<(usize, usize)>,
     pub indices_y: Vec<(usize, usize)>,
+}
+
+impl OutOfBoundsIndices {
+    pub fn reverse(self) -> Self {
+        Self {
+            indices_x: self.indices_y,
+            indices_y: self.indices_x
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -57,19 +87,53 @@ pub struct ElementsMismatch<T, Error> {
     pub mismatches: Vec<MatrixElementComparisonFailure<T, Error>>,
 }
 
+impl<T, Error> ElementsMismatch<T, Error>
+{
+    pub fn reverse(self) -> Self {
+        Self {
+            comparator_description: self.comparator_description,
+            mismatches: self.mismatches.into_iter().map(MatrixElementComparisonFailure::reverse).collect()
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct DuplicateEntries<T> {
     pub x_duplicates: HashMap<(usize, usize), Vec<T>>,
     pub y_duplicates: HashMap<(usize, usize), Vec<T>>,
 }
 
-#[derive(Debug, PartialEq)]
+impl<T> DuplicateEntries<T> {
+    pub fn reverse(self) -> Self {
+        Self {
+            x_duplicates: self.y_duplicates,
+            y_duplicates: self.x_duplicates
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum MatrixComparisonResult<T, Error> {
     Match,
     MismatchedDimensions(DimensionMismatch),
     MismatchedElements(ElementsMismatch<T, Error>),
     SparseIndicesOutOfBounds(OutOfBoundsIndices),
     DuplicateSparseEntries(DuplicateEntries<T>),
+}
+
+impl<T, Error> MatrixComparisonResult<T, Error>
+{
+    /// "Reverses" the result, in the sense that the roles of x and y are interchanged.
+    pub fn reverse(self) -> Self {
+        use MatrixComparisonResult::*;
+        match self {
+            Match => Match,
+            MismatchedDimensions(dim) => MismatchedDimensions(dim.reverse()),
+            MismatchedElements(elements) => MismatchedElements(elements.reverse()),
+            SparseIndicesOutOfBounds(indices) => SparseIndicesOutOfBounds(indices.reverse()),
+            DuplicateSparseEntries(duplicates) => DuplicateSparseEntries(duplicates.reverse())
+        }
+    }
 }
 
 impl<T, Error> MatrixComparisonResult<T, Error>

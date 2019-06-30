@@ -1,8 +1,10 @@
 use matrixcompare::comparators::{ElementwiseComparator, ExactElementwiseComparator, ExactError};
-use matrixcompare_mock::{MockDenseMatrix, mock_matrix};
+use matrixcompare_mock::{MockDenseMatrix, mock_matrix, dense_matrix_strategy_i64};
 use matrixcompare::{assert_matrix_eq, ElementsMismatch};
 use matrixcompare::{compare_matrices, DimensionMismatch, MatrixComparisonResult};
 use quickcheck::{quickcheck, TestResult};
+
+use proptest::prelude::*;
 
 quickcheck! {
     fn property_elementwise_comparison_incompatible_matrices_yield_dimension_mismatch(
@@ -267,4 +269,38 @@ pub fn matrix_eq_pass_by_ref() {
     assert_matrix_eq!(&x, &x, comp = ulp, tol = 0);
     assert_matrix_eq!(&x, &x, comp = float);
     assert_matrix_eq!(&x, &x, comp = float, eps = 0.0, ulp = 0);
+}
+
+proptest! {
+    #[test]
+    fn dense_dense_comparison_is_symmetric_for_compatible_matrices_i64(
+        // Generate two dense matrices which have the same dimensions
+        (dense1, dense2) in (0usize..5, 0usize..5).prop_flat_map(|(r, c)| {
+            (dense_matrix_strategy_i64(r..=r, c..=c), dense_matrix_strategy_i64(r..=r, c..=c))
+        })
+    ) {
+        let c = ExactElementwiseComparator;
+        let result1 = compare_matrices(&dense1, &dense2, &c);
+        let result2 = compare_matrices(&dense2, &dense1, &c);
+
+        // TODO: Create issue in proptest repo for the fact that prop_assert_eq! moves objects,
+        // whereas assert_eq! does not
+        prop_assert_eq!(result1.clone(), result2.clone().reverse());
+        prop_assert_eq!(result1.clone(), result2);
+    }
+}
+
+#[test]
+fn temp_mismatch_test() {
+    let mismatch1 = DimensionMismatch {
+        dim_x: (4, 2),
+        dim_y: (2, 4)
+    };
+
+    let mismatch2 = DimensionMismatch {
+        dim_x: (2, 4),
+        dim_y: (4, 2)
+    };
+
+    assert_eq!(mismatch1, mismatch2)
 }
