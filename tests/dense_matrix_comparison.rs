@@ -1,7 +1,7 @@
-use matcomp::comparators::{ElementwiseComparator, ExactElementwiseComparator, ExactError};
-use matcomp::mock::{MockDenseMatrix};
-use matcomp::{assert_matrix_eq, ElementsMismatch, mock_matrix};
-use matcomp::{compare_matrices, DimensionMismatch, MatrixComparisonResult};
+use matrixcompare::comparators::{ElementwiseComparator, ExactElementwiseComparator, ExactError};
+use matrixcompare::mock::{MockDenseMatrix};
+use matrixcompare::{assert_matrix_eq, ElementsMismatch, mock_matrix};
+use matrixcompare::{compare_matrices, DimensionMismatch, MatrixComparisonResult};
 use quickcheck::{quickcheck, TestResult};
 
 quickcheck! {
@@ -36,8 +36,8 @@ quickcheck! {
 
 #[test]
 fn compare_matrices_reports_correct_mismatches() {
-    use matcomp::MatrixComparisonResult::MismatchedElements;
-    use matcomp::MatrixElementComparisonFailure;
+    use matrixcompare::MatrixComparisonResult::MismatchedElements;
+    use matrixcompare::MatrixElementComparisonFailure;
 
     let comp = ExactElementwiseComparator;
     let description =

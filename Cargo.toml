@@ -1,5 +1,5 @@
 [package]
-name = "matcomp"
+name = "matrixcompare"
 version = "0.1.0"
 authors = ["Andreas Longva"]
 edition = "2018"

@@ -1,11 +1,11 @@
-use matcomp::assert_scalar_eq;
-use matcomp::comparators::{ExactElementwiseComparator, ExactError};
-use matcomp::compare_scalars;
+use matrixcompare::assert_scalar_eq;
+use matrixcompare::comparators::{ExactElementwiseComparator, ExactError};
+use matrixcompare::compare_scalars;
 
 #[test]
 fn scalar_comparison_reports_correct_mismatch() {
-    use matcomp::ScalarComparisonFailure;
-    use matcomp::ScalarComparisonResult::Mismatch;
+    use matrixcompare::ScalarComparisonFailure;
+    use matrixcompare::ScalarComparisonResult::Mismatch;
 
     let comp = ExactElementwiseComparator;
 
