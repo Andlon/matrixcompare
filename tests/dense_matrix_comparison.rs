@@ -1,6 +1,6 @@
 use matrixcompare::comparators::{ElementwiseComparator, ExactElementwiseComparator, ExactError};
-use matrixcompare::mock::{MockDenseMatrix};
-use matrixcompare::{assert_matrix_eq, ElementsMismatch, mock_matrix};
+use matrixcompare_mock::{MockDenseMatrix, mock_matrix};
+use matrixcompare::{assert_matrix_eq, ElementsMismatch};
 use matrixcompare::{compare_matrices, DimensionMismatch, MatrixComparisonResult};
 use quickcheck::{quickcheck, TestResult};
 

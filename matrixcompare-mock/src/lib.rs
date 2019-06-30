@@ -1,4 +1,4 @@
-use crate::{Accessor, DenseAccessor, Matrix, SparseAccessor};
+use matrixcompare::{Accessor, DenseAccessor, Matrix, SparseAccessor};
 
 #[derive(Clone, Debug)]
 pub struct MockDenseMatrix<T> {
@@ -86,13 +86,13 @@ macro_rules! mock_matrix {
     () => {
         {
             // Handle the case when called with no arguments, i.e. matrix![]
-            use $crate::mock::MockDenseMatrix;
+            use $crate::MockDenseMatrix;
             MockDenseMatrix::from_row_major(0, 0, vec![])
         }
     };
     ($( $( $x: expr ),*);*) => {
         {
-            use $crate::mock::MockDenseMatrix;
+            use $crate::MockDenseMatrix;
             let data_as_nested_array = [ $( [ $($x),* ] ),* ];
             let rows = data_as_nested_array.len();
             let cols = data_as_nested_array[0].len();

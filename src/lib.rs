@@ -16,10 +16,6 @@ pub mod comparators;
 mod macros;
 pub mod ulp;
 
-// TODO: Put under feature flag
-//#[cfg(test)]
-pub mod mock;
-
 pub use self::matrix_comparison::{
     compare_matrices, DimensionMismatch, ElementsMismatch, MatrixComparisonResult,
     MatrixElementComparisonFailure, OutOfBoundsIndices,

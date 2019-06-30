@@ -1,0 +1,12 @@
+[package]
+name = "matrixcompare-mock"
+version = "0.1.0"
+authors = ["Andreas Longva <andreas.b.longva@gmail.com>"]
+edition = "2018"
+
+# Since this is just an internal crate used for testing in matrixcompare,
+# make sure that we don't publish it by accident.
+publish = false
+
+[dependencies]
+matrixcompare = { path = ".." }
