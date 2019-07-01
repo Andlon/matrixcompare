@@ -14,7 +14,8 @@ proptest! {
         sparse in sparse_matrix_strategy_i64(MATRIX_DIM_RANGE, MATRIX_DIM_RANGE)
     ) {
         let c = ExactElementwiseComparator;
-        compare_matrices(&dense, &sparse, &c) == compare_matrices(&dense, sparse.to_dense().unwrap(), &c)
+        prop_assert_eq!(compare_matrices(&dense, &sparse, &c),
+                        compare_matrices(&dense, sparse.to_dense().unwrap(), &c));
     }
 
     #[test]
@@ -23,7 +24,8 @@ proptest! {
         sparse in sparse_matrix_strategy_normal_f64(MATRIX_DIM_RANGE, MATRIX_DIM_RANGE)
     ) {
         let c = ExactElementwiseComparator;
-        compare_matrices(&dense, &sparse, &c) == compare_matrices(&dense, sparse.to_dense().unwrap(), &c)
+        prop_assert_eq!(compare_matrices(&dense, &sparse, &c),
+                        compare_matrices(&dense, sparse.to_dense().unwrap(), &c));
     }
 
     #[test]
