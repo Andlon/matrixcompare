@@ -14,7 +14,7 @@
 /// comparison of the two matrices.
 ///
 /// ```
-/// # use matrixcompare::{assert_matrix_eq, mock_matrix};
+/// # use matrixcompare::assert_matrix_eq; use matrixcompare_mock::mock_matrix;
 /// # let x = mock_matrix![1.0f64]; let y = mock_matrix![1.0f64];
 /// // Performs elementwise exact comparison
 /// assert_matrix_eq!(x, y);
@@ -25,7 +25,7 @@
 /// For this purpose, `assert_matrix_eq!` provides several comparators.
 ///
 /// ```
-/// # use matrixcompare::{assert_matrix_eq, mock_matrix};
+/// # use matrixcompare::assert_matrix_eq; use matrixcompare_mock::mock_matrix;
 /// # let x = mock_matrix![1.0f64]; let y = mock_matrix![1.0f64];
 /// // Available comparators:
 /// assert_matrix_eq!(x, y, comp = exact);
@@ -64,7 +64,7 @@
 /// The `max_eps` and `max_ulp` parameters can be tweaked to your preference with the syntax:
 ///
 /// ```
-/// # use matrixcompare::{assert_matrix_eq, mock_matrix};
+/// # use matrixcompare::assert_matrix_eq; use matrixcompare_mock::mock_matrix;
 /// # let x = mock_matrix![1.0f64]; let y = mock_matrix![1.0f64];
 /// # let max_eps = 1.0; let max_ulp = 0;
 /// assert_matrix_eq!(x, y, comp = float, eps = max_eps, ulp = max_ulp);
@@ -117,7 +117,7 @@
 /// useful error messages which help pinpoint the problems. For example, consider the example
 ///
 /// ```rust,should_panic
-/// use matrixcompare::{assert_matrix_eq, mock_matrix};
+/// # use matrixcompare::assert_matrix_eq; use matrixcompare_mock::mock_matrix;
 ///
 /// fn main() {
 ///     let a = mock_matrix![1.00, 2.00;
@@ -151,7 +151,7 @@
 /// # Examples
 ///
 /// ```
-/// # use matrixcompare::{assert_matrix_eq, mock_matrix};
+/// # use matrixcompare::assert_matrix_eq; use matrixcompare_mock::mock_matrix;
 ///
 /// let ref a = mock_matrix![1, 2;
 ///                          3, 4i64];
