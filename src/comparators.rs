@@ -165,7 +165,6 @@ pub struct FloatElementwiseComparator<T> {
     ulp: UlpElementwiseComparator,
 }
 
-#[allow(dead_code)]
 impl<T> FloatElementwiseComparator<T>
 where
     T: Float + Ulp,
