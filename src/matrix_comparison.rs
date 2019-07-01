@@ -303,6 +303,10 @@ where
                 }
             }
 
+            // Sorting the mismatches by (i, j) gives us predictable output, independent of e.g.
+            // the order we compare the two matrices.
+            mismatches.sort_by_key(|mismatch| (mismatch.row, mismatch.col));
+
             if mismatches.is_empty() {
                 MatrixComparisonResult::Match
             } else {
