@@ -1,0 +1,9 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 82d937adaf91172d13f04db9f471adb9477859933cd0c6e8dd6d4d8fa5d9bbff # shrinks to sparse1 = MockSparseMatrix { shape: (1, 2), triplets: [(0, 1, -1)] }, sparse2 = MockSparseMatrix { shape: (1, 2), triplets: [(0, 0, 1)] }
+cc 84e58276a66d8cc042bad6e1774366d4525c7c37bdab47dcb6b6bbc8d6ea2278 # shrinks to sparse1 = MockSparseMatrix { shape: (4, 2), triplets: [] }, sparse2 = MockSparseMatrix { shape: (4, 2), triplets: [(2, 1, 0.00000000000000000000000000000010400403708701326), (1, 0, 0.000023428962896534442)] }
+cc ba77c8fe4a1ab406bf59ad877d666dec251d095656dbbaa58ea614bad97b3acd # shrinks to sparse1 = MockSparseMatrix { shape: (4, 3), triplets: [] }, sparse2 = MockSparseMatrix { shape: (4, 3), triplets: [(1, 0, -3949841819748582881), (3, 0, 2618602378141762179), (1, 1, -5178423176324119450), (0, 1, 6516272042114543705), (2, 0, -8047330978155269760), (2, 1, 7632362609195216088), (1, 2, -4026521101998720310), (3, 2, 5507296358303454920), (3, 1, 7390960972418687070)] }
