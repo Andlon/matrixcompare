@@ -9,5 +9,5 @@ num = "0.2"
 
 [dev-dependencies]
 quickcheck = "0.8.3"
-matrixcompare-mock = { path = "matrixcompare-mock" }
+matrixcompare-mock = { path = "matrixcompare-mock", version="0.1" }
 proptest = "0.9"
