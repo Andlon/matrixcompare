@@ -10,6 +10,6 @@ publish = false
 
 [dependencies]
 num = "0.2"
-matrixcompare = { path = ".." }
+matrixcompare = { path = "..", version="0.1" }
 proptest = "0.9"
 
