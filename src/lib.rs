@@ -25,7 +25,7 @@ pub use self::scalar_comparison::{
     compare_scalars, ScalarComparisonFailure, ScalarComparisonResult,
 };
 
-pub use self::comparison_failure::{DimensionMismatch, ElementsMismatch, MatrixComparisonResult,
+pub use self::comparison_failure::{DimensionMismatch, ElementsMismatch, MatrixComparisonFailure,
                                    MatrixElementComparisonFailure, OutOfBoundsIndices, DuplicateEntries};
 
 pub enum Accessor<'a, T> {

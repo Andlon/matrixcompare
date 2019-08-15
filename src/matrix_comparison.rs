@@ -1,5 +1,5 @@
 use crate::comparators::{ElementwiseComparator};
-use crate::{Accessor, DenseAccessor, Matrix, SparseAccessor, MatrixComparisonResult, OutOfBoundsIndices, DuplicateEntries, MatrixElementComparisonFailure, ElementsMismatch, DimensionMismatch};
+use crate::{Accessor, DenseAccessor, Matrix, SparseAccessor, MatrixComparisonFailure, OutOfBoundsIndices, DuplicateEntries, MatrixElementComparisonFailure, ElementsMismatch, DimensionMismatch};
 use num::Zero;
 use std::collections::{HashMap, HashSet};
 
@@ -43,7 +43,7 @@ fn compare_sparse_sparse<T, C>(
     x: &SparseAccessor<T>,
     y: &SparseAccessor<T>,
     comparator: &C,
-) -> MatrixComparisonResult<T, C::Error>
+) -> Result<(), MatrixComparisonFailure<T, C::Error>>
 where
     T: Zero + Clone,
     C: ElementwiseComparator<T>,
@@ -58,10 +58,10 @@ where
     let y_out_of_bounds = find_out_of_bounds_indices(y.rows(), y.cols(), &y_triplets);
 
     if !x_out_of_bounds.is_empty() || !y_out_of_bounds.is_empty() {
-        MatrixComparisonResult::SparseIndicesOutOfBounds(OutOfBoundsIndices {
+        Err(MatrixComparisonFailure::SparseIndicesOutOfBounds(OutOfBoundsIndices {
             indices_x: x_out_of_bounds,
             indices_y: y_out_of_bounds,
-        })
+        }))
     } else {
         let x_hash = try_build_hash_map_from_triplets(&x_triplets);
         let y_hash = try_build_hash_map_from_triplets(&y_triplets);
@@ -69,10 +69,10 @@ where
         if x_hash.is_err() || y_hash.is_err() {
             let x_duplicates = x_hash.err().unwrap_or(HashMap::new());
             let y_duplicates = y_hash.err().unwrap_or(HashMap::new());
-            MatrixComparisonResult::DuplicateSparseEntries(DuplicateEntries {
+            Err(MatrixComparisonFailure::DuplicateSparseEntries(DuplicateEntries {
                 x_duplicates,
                 y_duplicates,
-            })
+            }))
         } else {
             let mut mismatches = Vec::new();
             let x_hash = x_hash.ok().unwrap();
@@ -100,12 +100,12 @@ where
             mismatches.sort_by_key(|mismatch| (mismatch.row, mismatch.col));
 
             if mismatches.is_empty() {
-                MatrixComparisonResult::Match
+                Ok(())
             } else {
-                MatrixComparisonResult::MismatchedElements(ElementsMismatch {
+                Err(MatrixComparisonFailure::MismatchedElements(ElementsMismatch {
                     comparator_description: comparator.description(),
                     mismatches,
-                })
+                }))
             }
         }
     }
@@ -128,7 +128,7 @@ fn compare_dense_sparse<T, C>(
     y: &SparseAccessor<T>,
     comparator: &C,
     swap_order: bool
-) -> MatrixComparisonResult<T, C::Error>
+) -> Result<(), MatrixComparisonFailure<T, C::Error>>
 where
     T: Zero + Clone,
     C: ElementwiseComparator<T>,
@@ -140,18 +140,18 @@ where
 
     let y_out_of_bounds = find_out_of_bounds_indices(y.rows(), y.cols(), &y_triplets);
     if !y_out_of_bounds.is_empty() {
-        MatrixComparisonResult::SparseIndicesOutOfBounds(OutOfBoundsIndices {
+        Err(MatrixComparisonFailure::SparseIndicesOutOfBounds(OutOfBoundsIndices {
             indices_x: Vec::new(),
             indices_y: y_out_of_bounds,
-        })
+        }))
     } else {
         let y_hash = try_build_hash_map_from_triplets(&y_triplets);
 
         if let Err(y_duplicates) = y_hash {
-            MatrixComparisonResult::DuplicateSparseEntries(DuplicateEntries {
+            Err(MatrixComparisonFailure::DuplicateSparseEntries(DuplicateEntries {
                 x_duplicates: HashMap::new(),
                 y_duplicates,
-            })
+            }))
         } else {
             let mut mismatches = Vec::new();
             let y_hash = y_hash.ok().unwrap();
@@ -175,12 +175,12 @@ where
             }
 
             if mismatches.is_empty() {
-                MatrixComparisonResult::Match
+                Ok(())
             } else {
-                MatrixComparisonResult::MismatchedElements(ElementsMismatch {
+                Err(MatrixComparisonFailure::MismatchedElements(ElementsMismatch {
                     comparator_description: comparator.description(),
                     mismatches,
-                })
+                }))
             }
         }
     }
@@ -190,7 +190,7 @@ fn compare_dense_dense<T, C>(
     x: &DenseAccessor<T>,
     y: &DenseAccessor<T>,
     comparator: &C,
-) -> MatrixComparisonResult<T, C::Error>
+) -> Result<(), MatrixComparisonFailure<T, C::Error>>
 where
     T: Clone,
     C: ElementwiseComparator<T>,
@@ -216,12 +216,12 @@ where
     }
 
     if mismatches.is_empty() {
-        MatrixComparisonResult::Match
+        Ok(())
     } else {
-        MatrixComparisonResult::MismatchedElements(ElementsMismatch {
+        Err(MatrixComparisonFailure::MismatchedElements(ElementsMismatch {
             comparator_description: comparator.description(),
             mismatches,
-        })
+        }))
     }
 }
 
@@ -229,7 +229,7 @@ pub fn compare_matrices<T, C>(
     x: impl Matrix<T>,
     y: impl Matrix<T>,
     comparator: &C,
-) -> MatrixComparisonResult<T, C::Error>
+) -> Result<(), MatrixComparisonFailure<T, C::Error>>
 where
     T: Zero + Clone,
     C: ElementwiseComparator<T>,
@@ -255,9 +255,9 @@ where
         };
         result
     } else {
-        MatrixComparisonResult::MismatchedDimensions(DimensionMismatch {
+        Err(MatrixComparisonFailure::MismatchedDimensions(DimensionMismatch {
             dim_x: (x.rows(), x.cols()),
             dim_y: (y.rows(), y.cols()),
-        })
+        }))
     }
 }

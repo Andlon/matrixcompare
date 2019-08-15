@@ -37,7 +37,7 @@ proptest! {
         let result1 = compare_matrices(&dense, &sparse, &c);
         let result2 = compare_matrices(&sparse, &dense, &c);
 
-        prop_assert_eq!(result1.clone(), result2.clone().reverse());
-        prop_assert_eq!(result1.reverse(), result2);
+        prop_assert_eq!(result1.clone(), result2.clone().map_err(|err| err.reverse()));
+        prop_assert_eq!(result1.map_err(|err| err.reverse()), result2);
     }
 }

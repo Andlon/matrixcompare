@@ -4,7 +4,7 @@ use matrixcompare_mock::{sparse_matrix_strategy_i64, sparse_matrix_strategy_norm
 use proptest::prelude::*;
 
 mod common;
-use common::MATRIX_DIM_RANGE;
+use common::{MATRIX_DIM_RANGE};
 
 proptest! {
     #[test]
@@ -40,7 +40,7 @@ proptest! {
         let result1 = compare_matrices(&sparse1, &sparse2, &c);
         let result2 = compare_matrices(&sparse2, &sparse1, &c);
 
-        prop_assert_eq!(result1.clone(), result2.clone().reverse());
-        prop_assert_eq!(result1.reverse(), result2);
+        prop_assert_eq!(result1.clone(), result2.clone().map_err(|err| err.reverse()));
+        prop_assert_eq!(result1.map_err(|err| err.reverse()), result2);
     }
 }

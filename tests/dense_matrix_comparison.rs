@@ -1,7 +1,7 @@
 use matrixcompare::comparators::{ElementwiseComparator, ExactElementwiseComparator, ExactError};
 use matrixcompare_mock::{MockDenseMatrix, mock_matrix, dense_matrix_strategy_i64};
 use matrixcompare::{assert_matrix_eq, ElementsMismatch};
-use matrixcompare::{compare_matrices, DimensionMismatch, MatrixComparisonResult};
+use matrixcompare::{compare_matrices, DimensionMismatch, MatrixComparisonFailure};
 use quickcheck::{quickcheck, TestResult};
 
 use proptest::prelude::*;
@@ -24,9 +24,9 @@ quickcheck! {
         let ref x = MockDenseMatrix::from_row_major(m, n, vec![0; m * n]);
         let ref y = MockDenseMatrix::from_row_major(p, q, vec![0; p * q]);
 
-        let expected = MatrixComparisonResult::MismatchedDimensions(DimensionMismatch { dim_x: (m, n), dim_y: (p, q) });
+        let expected = MatrixComparisonFailure::MismatchedDimensions(DimensionMismatch { dim_x: (m, n), dim_y: (p, q) });
 
-        TestResult::from_bool(compare_matrices(x, y, &comp) == expected)
+        TestResult::from_bool(compare_matrices(x, y, &comp) == Err(expected))
     }
 }
 
@@ -35,13 +35,13 @@ quickcheck! {
         let comp = ExactElementwiseComparator;
         let ref x = MockDenseMatrix::from_row_major(m, n, vec![0; m * n]);
 
-        compare_matrices(x, x, &comp) == MatrixComparisonResult::Match
+        compare_matrices(x, x, &comp).is_ok()
     }
 }
 
 #[test]
 fn compare_matrices_reports_correct_mismatches() {
-    use matrixcompare::MatrixComparisonResult::MismatchedElements;
+    use matrixcompare::MatrixComparisonFailure::MismatchedElements;
     use matrixcompare::MatrixElementComparisonFailure;
 
     let comp = ExactElementwiseComparator;
@@ -64,7 +64,7 @@ fn compare_matrices_reports_correct_mismatches() {
             }],
         });
 
-        assert_eq!(compare_matrices(x, y, &comp), expected);
+        assert_eq!(compare_matrices(x, y, &comp), Err(expected));
     }
 
     {
@@ -93,7 +93,7 @@ fn compare_matrices_reports_correct_mismatches() {
             mismatches: mismatches,
         });
 
-        assert_eq!(compare_matrices(x, y, &comp), expected);
+        assert_eq!(compare_matrices(x, y, &comp), Err(expected));
     }
 
     {
@@ -126,7 +126,7 @@ fn compare_matrices_reports_correct_mismatches() {
             mismatches: mismatches,
         });
 
-        assert_eq!(compare_matrices(x, y, &comp), expected);
+        assert_eq!(compare_matrices(x, y, &comp), Err(expected));
     }
 
     {
@@ -156,7 +156,7 @@ fn compare_matrices_reports_correct_mismatches() {
             mismatches: mismatches,
         });
 
-        assert_eq!(compare_matrices(x, y, &comp), expected);
+        assert_eq!(compare_matrices(x, y, &comp), Err(expected));
     }
 }
 
@@ -288,8 +288,8 @@ proptest! {
 
         // TODO: Create issue in proptest repo for the fact that prop_assert_eq! moves objects,
         // whereas assert_eq! does not
-        prop_assert_eq!(result1.clone(), result2.clone().reverse());
-        prop_assert_eq!(result1.reverse(), result2);
+        prop_assert_eq!(result1.clone(), result2.clone().map_err(|err| err.reverse()));
+        prop_assert_eq!(result1.map_err(|err| err.reverse()), result2);
     }
 
     #[test]
@@ -301,7 +301,7 @@ proptest! {
         let c = ExactElementwiseComparator;
         let result1 = compare_matrices(&dense1, &dense2, &c);
         let result2 = compare_matrices(&dense2, &dense1, &c);
-        prop_assert_eq!(result1.clone(), result2.clone().reverse());
-        prop_assert_eq!(result1.reverse(), result2);
+        prop_assert_eq!(result1.clone(), result2.clone().map_err(|err| err.reverse()));
+        prop_assert_eq!(result1.map_err(|err| err.reverse()), result2);
     }
 }

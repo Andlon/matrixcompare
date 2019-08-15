@@ -171,21 +171,20 @@
 macro_rules! assert_matrix_eq {
     ($x:expr, $y:expr) => {
         {
-            // Note: The reason we take slices of both x and y is that if x or y are passed as references,
-            // we don't attempt to call compare_matrices with a &&BaseMatrix type (double reference),
-            // which does not work due to generics.
             use $crate::{compare_matrices};
             use $crate::comparators::ExactElementwiseComparator;
 
             let comp = ExactElementwiseComparator;
-            let msg = compare_matrices(&$x, &$y, &comp).panic_message();
-            if let Some(msg) = msg {
+            let result = compare_matrices(&$x, &$y, &comp);
+            if let Err(failure) = result {
                 // Note: We need the panic to incur here inside of the macro in order
                 // for the line number to be correct when using it for tests,
                 // hence we build the panic message in code, but panic here.
-                panic!("{msg}
+                if let Some(msg) = failure.panic_message() {
+                    panic!("{msg}
 Please see the documentation for ways to compare matrices approximately.\n\n",
                     msg = msg.trim_end());
+                }
             }
         }
     };
@@ -195,9 +194,11 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
             use $crate::comparators::ExactElementwiseComparator;
 
             let comp = ExactElementwiseComparator;
-            let msg = compare_matrices(&$x, &$y, &comp).panic_message();
-            if let Some(msg) = msg {
-                panic!(msg);
+            let result = compare_matrices(&$x, &$y, &comp);
+            if let Err(failure) = result {
+                if let Some(msg) = failure.panic_message() {
+                    panic!(msg);
+                }
             }
         }
     };
@@ -207,9 +208,11 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
             use $crate::comparators::AbsoluteElementwiseComparator;
 
             let comp = AbsoluteElementwiseComparator { tol: $tol };
-            let msg = compare_matrices(&$x, &$y, &comp).panic_message();
-            if let Some(msg) = msg {
-                panic!(msg);
+            let result = compare_matrices(&$x, &$y, &comp);
+            if let Err(failure) = result {
+                if let Some(msg) = failure.panic_message() {
+                    panic!(msg);
+                }
             }
         }
     };
@@ -219,9 +222,11 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
             use $crate::comparators::UlpElementwiseComparator;
 
             let comp = UlpElementwiseComparator { tol: $tol };
-            let msg = compare_matrices(&$x, &$y, &comp).panic_message();
-            if let Some(msg) = msg {
-                panic!(msg);
+            let result = compare_matrices(&$x, &$y, &comp);
+            if let Err(failure) = result {
+                if let Some(msg) = failure.panic_message() {
+                    panic!(msg);
+                }
             }
         }
     };
@@ -231,9 +236,11 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
             use $crate::comparators::FloatElementwiseComparator;
 
             let comp = FloatElementwiseComparator::default();
-            let msg = compare_matrices(&$x, &$y, &comp).panic_message();
-            if let Some(msg) = msg {
-                panic!(msg);
+            let result = compare_matrices(&$x, &$y, &comp);
+            if let Err(failure) = result {
+                if let Some(msg) = failure.panic_message() {
+                    panic!(msg);
+                }
             }
         }
     };
@@ -245,9 +252,11 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
             use $crate::comparators::FloatElementwiseComparator;
 
             let comp = FloatElementwiseComparator::default()$(.$key($val))+;
-            let msg = compare_matrices(&$x, &$y, &comp).panic_message();
-            if let Some(msg) = msg {
-                panic!(msg);
+            let result = compare_matrices(&$x, &$y, &comp);
+            if let Err(failure) = result {
+                if let Some(msg) = failure.panic_message() {
+                    panic!(msg);
+                }
             }
         }
     };

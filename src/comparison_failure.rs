@@ -110,21 +110,19 @@ impl<T> DuplicateEntries<T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum MatrixComparisonResult<T, Error> {
-    Match,
+pub enum MatrixComparisonFailure<T, Error> {
     MismatchedDimensions(DimensionMismatch),
     MismatchedElements(ElementsMismatch<T, Error>),
     SparseIndicesOutOfBounds(OutOfBoundsIndices),
     DuplicateSparseEntries(DuplicateEntries<T>),
 }
 
-impl<T, Error> MatrixComparisonResult<T, Error>
+impl<T, Error> MatrixComparisonFailure<T, Error>
 {
     /// "Reverses" the result, in the sense that the roles of x and y are interchanged.
     pub fn reverse(self) -> Self {
-        use MatrixComparisonResult::*;
+        use MatrixComparisonFailure::*;
         match self {
-            Match => Match,
             MismatchedDimensions(dim) => MismatchedDimensions(dim.reverse()),
             MismatchedElements(elements) => MismatchedElements(elements.reverse()),
             SparseIndicesOutOfBounds(indices) => SparseIndicesOutOfBounds(indices.reverse()),
@@ -133,14 +131,14 @@ impl<T, Error> MatrixComparisonResult<T, Error>
     }
 }
 
-impl<T, Error> MatrixComparisonResult<T, Error>
+impl<T, Error> MatrixComparisonFailure<T, Error>
     where
         T: fmt::Display,
         Error: ComparisonFailure,
 {
     pub fn panic_message(&self) -> Option<String> {
         match self {
-            &MatrixComparisonResult::MismatchedElements(ElementsMismatch {
+            &MatrixComparisonFailure::MismatchedElements(ElementsMismatch {
                                                             ref comparator_description,
                                                             ref mismatches,
                                                         }) => {
@@ -183,7 +181,7 @@ Comparison criterion: {description}
                     overflow_msg = overflow_msg
                 ))
             }
-            &MatrixComparisonResult::MismatchedDimensions(DimensionMismatch { dim_x, dim_y }) => {
+            &MatrixComparisonFailure::MismatchedDimensions(DimensionMismatch { dim_x, dim_y }) => {
                 Some(format!(
                     "\n
 Dimensions of matrices X and Y do not match.
@@ -197,13 +195,12 @@ Dimensions of matrices X and Y do not match.
                 ))
             }
             // TODO
-            &MatrixComparisonResult::SparseIndicesOutOfBounds(ref _out_of_bounds) => {
+            &MatrixComparisonFailure::SparseIndicesOutOfBounds(ref _out_of_bounds) => {
                 Some("TODO: Error for out of bounds".to_string())
             }
-            &MatrixComparisonResult::DuplicateSparseEntries(ref _duplicate) => {
+            &MatrixComparisonFailure::DuplicateSparseEntries(ref _duplicate) => {
                 Some("TODO: Error for duplicate entries".to_string())
             }
-            &MatrixComparisonResult::Match => None,
         }
     }
 }
