@@ -64,6 +64,23 @@ impl DimensionMismatch {
     }
 }
 
+impl fmt::Display for DimensionMismatch {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "\n
+Dimensions of matrices X and Y do not match.
+ dim(X) = {x_rows} x {x_cols}
+ dim(Y) = {y_rows} x {y_cols}
+\n",
+            x_rows = self.dim_x.0,
+            x_cols = self.dim_x.1,
+            y_rows = self.dim_y.0,
+            y_cols = self.dim_y.1
+        )
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OutOfBoundsIndices {
     pub indices_x: Vec<(usize, usize)>,
@@ -95,6 +112,55 @@ impl<T, Error> ElementsMismatch<T, Error> {
                 .map(MatrixElementComparisonFailure::reverse)
                 .collect(),
         }
+    }
+}
+
+impl<T, Error> fmt::Display for ElementsMismatch<T, Error>
+where
+    T: fmt::Display,
+    Error: ComparisonFailure
+{
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        // TODO: Aligned output
+        let mut formatted_mismatches = String::new();
+
+        let mismatches_overflow = self.mismatches.len() > MAX_MISMATCH_REPORTS;
+        // TODO: Write directly to formatter
+        let overflow_msg = if mismatches_overflow {
+            let num_hidden_entries = self.mismatches.len() - MAX_MISMATCH_REPORTS;
+            format!(
+                " ... ({} mismatching elements not shown)\n",
+                num_hidden_entries
+            )
+        } else {
+            String::new()
+        };
+
+        for mismatch in self.mismatches.iter().take(MAX_MISMATCH_REPORTS) {
+            formatted_mismatches.push_str(" ");
+            formatted_mismatches.push_str(&mismatch.to_string());
+            formatted_mismatches.push_str("\n");
+        }
+
+        // Strip off the last newline from the above
+        formatted_mismatches = formatted_mismatches.trim_end().to_string();
+
+        write!(
+            f,
+            "\n
+Matrices X and Y have {num} mismatched element pairs.
+The mismatched elements are listed below, in the format
+(row, col): x = X[[row, col]], y = Y[[row, col]].
+
+{mismatches}
+{overflow_msg}
+Comparison criterion: {description}
+\n",
+            num = self.mismatches.len(),
+            description = self.comparator_description,
+            mismatches = formatted_mismatches,
+            overflow_msg = overflow_msg
+        )
     }
 }
 
@@ -141,64 +207,11 @@ where
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
-            &MatrixComparisonFailure::MismatchedElements(ElementsMismatch {
-                ref comparator_description,
-                ref mismatches,
-            }) => {
-                // TODO: Aligned output
-                let mut formatted_mismatches = String::new();
-
-                let mismatches_overflow = mismatches.len() > MAX_MISMATCH_REPORTS;
-                // TODO: Write directly to formatter
-                let overflow_msg = if mismatches_overflow {
-                    let num_hidden_entries = mismatches.len() - MAX_MISMATCH_REPORTS;
-                    format!(
-                        " ... ({} mismatching elements not shown)\n",
-                        num_hidden_entries
-                    )
-                } else {
-                    String::new()
-                };
-
-                for mismatch in mismatches.iter().take(MAX_MISMATCH_REPORTS) {
-                    formatted_mismatches.push_str(" ");
-                    formatted_mismatches.push_str(&mismatch.to_string());
-                    formatted_mismatches.push_str("\n");
-                }
-
-                // Strip off the last newline from the above
-                formatted_mismatches = formatted_mismatches.trim_end().to_string();
-
-                write!(
-                    f,
-                    "\n
-Matrices X and Y have {num} mismatched element pairs.
-The mismatched elements are listed below, in the format
-(row, col): x = X[[row, col]], y = Y[[row, col]].
-
-{mismatches}
-{overflow_msg}
-Comparison criterion: {description}
-\n",
-                    num = mismatches.len(),
-                    description = comparator_description,
-                    mismatches = formatted_mismatches,
-                    overflow_msg = overflow_msg
-                )
+            &MatrixComparisonFailure::MismatchedElements(ref mismatch) => {
+                mismatch.fmt(f)
             }
-            &MatrixComparisonFailure::MismatchedDimensions(DimensionMismatch { dim_x, dim_y }) => {
-                write!(
-                    f,
-                    "\n
-Dimensions of matrices X and Y do not match.
- dim(X) = {x_rows} x {x_cols}
- dim(Y) = {y_rows} x {y_cols}
-\n",
-                    x_rows = dim_x.0,
-                    x_cols = dim_x.1,
-                    y_rows = dim_y.0,
-                    y_cols = dim_y.1
-                )
+            &MatrixComparisonFailure::MismatchedDimensions(ref mismatch) => {
+                mismatch.fmt(f)
             }
             // TODO
             &MatrixComparisonFailure::SparseIndicesOutOfBounds(ref _out_of_bounds) => {
