@@ -1,7 +1,6 @@
-use crate::comparators::ComparisonFailure;
 use core::fmt;
 use std::collections::HashMap;
-use std::fmt::Formatter;
+use std::fmt::{Formatter, Display};
 
 const MAX_MISMATCH_REPORTS: usize = 12;
 
@@ -26,26 +25,20 @@ impl<T, E> MatrixElementComparisonFailure<T, E> {
     }
 }
 
-impl<T, E> fmt::Display for MatrixElementComparisonFailure<T, E>
+impl<T, E> Display for MatrixElementComparisonFailure<T, E>
 where
-    T: fmt::Display,
-    E: ComparisonFailure,
+    T: Display,
+    E: Display,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "({i}, {j}): x = {x}, y = {y}.{reason}",
+            "({i}, {j}): x = {x}, y = {y}. ",
             i = self.row,
             j = self.col,
             x = self.x,
-            y = self.y,
-            reason = self
-                .error
-                .failure_reason()
-                // Add a space before the reason
-                .map(|s| format!(" {}", s))
-                .unwrap_or(String::new())
-        )
+            y = self.y)?;
+        write!(f, "{}", self.error)
     }
 }
 
@@ -64,7 +57,7 @@ impl DimensionMismatch {
     }
 }
 
-impl fmt::Display for DimensionMismatch {
+impl Display for DimensionMismatch {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
             f,
@@ -115,10 +108,10 @@ impl<T, Error> ElementsMismatch<T, Error> {
     }
 }
 
-impl<T, Error> fmt::Display for ElementsMismatch<T, Error>
+impl<T, Error> Display for ElementsMismatch<T, Error>
 where
-    T: fmt::Display,
-    Error: ComparisonFailure
+    T: Display,
+    Error: Display
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         // TODO: Aligned output
@@ -200,10 +193,10 @@ impl<T, Error> MatrixComparisonFailure<T, Error> {
     }
 }
 
-impl<T, Error> fmt::Display for MatrixComparisonFailure<T, Error>
+impl<T, Error> Display for MatrixComparisonFailure<T, Error>
 where
-    T: fmt::Display,
-    Error: ComparisonFailure,
+    T: Display,
+    Error: Display,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {

@@ -1,11 +1,9 @@
 use std::fmt;
 
-use crate::comparators::{ComparisonFailure, ElementwiseComparator};
+use crate::comparators::{ElementwiseComparator};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ScalarComparisonFailure<T, E>
-where
-    E: ComparisonFailure,
 {
     pub x: T,
     pub y: T,
@@ -15,21 +13,11 @@ where
 impl<T, E> fmt::Display for ScalarComparisonFailure<T, E>
 where
     T: fmt::Display,
-    E: ComparisonFailure,
+    E: fmt::Display,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "x = {x}, y = {y}.{reason}",
-            x = self.x,
-            y = self.y,
-            reason = self
-                .error
-                .failure_reason()
-                // Add a space before the reason
-                .map(|s| format!(" {}", s))
-                .unwrap_or(String::new())
-        )
+        write!(f, "x = {x}, y = {y}. ", x = self.x, y = self.y)?;
+        write!(f, "{}", self.error)
     }
 }
 

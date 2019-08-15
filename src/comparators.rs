@@ -5,13 +5,14 @@ use crate::ulp::{Ulp, UlpComparisonResult};
 use num::{Float, Num};
 
 use std::fmt;
+use std::fmt::{Formatter, Display};
 
 /// Trait that describes elementwise comparators for [assert_matrix_eq!](../macro.assert_matrix_eq!.html).
 ///
 /// Usually you should not need to interface with this trait directly. It is a part of the documentation
 /// only so that the trait bounds for the comparators are made public.
 pub trait ElementwiseComparator<T> {
-    type Error: ComparisonFailure;
+    type Error: Display;
 
     /// Compares two elements.
     ///
@@ -20,10 +21,6 @@ pub trait ElementwiseComparator<T> {
 
     /// A description of the comparator.
     fn description(&self) -> String;
-}
-
-pub trait ComparisonFailure {
-    fn failure_reason(&self) -> Option<String>;
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -36,18 +33,18 @@ pub struct AbsoluteElementwiseComparator<T> {
     pub tol: T,
 }
 
-impl<T> ComparisonFailure for AbsoluteError<T>
+impl<T> Display for AbsoluteError<T>
 where
-    T: fmt::Display,
+    T: Display,
 {
-    fn failure_reason(&self) -> Option<String> {
-        Some(format!("Absolute error: {error}.", error = self.0))
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "Absolute error: {error}.", error = self.0)
     }
 }
 
 impl<T> ElementwiseComparator<T> for AbsoluteElementwiseComparator<T>
 where
-    T: Clone + fmt::Display + Num + PartialOrd<T>,
+    T: Clone + Display + Num + PartialOrd<T>,
 {
     type Error = AbsoluteError<T>;
 
@@ -86,15 +83,15 @@ pub struct ExactElementwiseComparator;
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct ExactError;
 
-impl ComparisonFailure for ExactError {
-    fn failure_reason(&self) -> Option<String> {
-        None
+impl Display for ExactError {
+    fn fmt(&self, _: &mut Formatter) -> fmt::Result {
+        Ok(())
     }
 }
 
 impl<T> ElementwiseComparator<T> for ExactElementwiseComparator
 where
-    T: fmt::Display + PartialEq<T>,
+    T: Display + PartialEq<T>,
 {
     type Error = ExactError;
 
@@ -119,18 +116,19 @@ pub struct UlpElementwiseComparator {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
+// TODO: Use same pattern for UlpComparisonResult, i.e. use Result<(), UlpComparisonError>?
 pub struct UlpError(pub UlpComparisonResult);
 
-impl ComparisonFailure for UlpError {
-    fn failure_reason(&self) -> Option<String> {
+impl Display for UlpError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self.0 {
             UlpComparisonResult::Difference(diff) => {
-                Some(format!("Difference: {diff} ULP.", diff = diff))
+                write!(f, "Difference: {diff} ULP.", diff = diff)
             }
             UlpComparisonResult::IncompatibleSigns => {
-                Some(format!("Numbers have incompatible signs."))
+                write!(f, "Numbers have incompatible signs.")
             }
-            _ => None,
+            _ => Ok(()),
         }
     }
 }
@@ -193,7 +191,7 @@ where
 
 impl<T> ElementwiseComparator<T> for FloatElementwiseComparator<T>
 where
-    T: Ulp + Float + fmt::Display,
+    T: Ulp + Float + Display,
 {
     type Error = UlpError;
 
