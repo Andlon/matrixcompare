@@ -180,11 +180,9 @@ macro_rules! assert_matrix_eq {
                 // Note: We need the panic to incur here inside of the macro in order
                 // for the line number to be correct when using it for tests,
                 // hence we build the panic message in code, but panic here.
-                if let Some(msg) = failure.panic_message() {
-                    panic!("{msg}
-Please see the documentation for ways to compare matrices approximately.\n\n",
-                    msg = msg.trim_end());
-                }
+                panic!("{}\
+                    Please see the documentation for ways to compare matrices approximately.\n\n",
+                    failure);
             }
         }
     };
@@ -196,9 +194,7 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
             let comp = ExactElementwiseComparator;
             let result = compare_matrices(&$x, &$y, &comp);
             if let Err(failure) = result {
-                if let Some(msg) = failure.panic_message() {
-                    panic!(msg);
-                }
+                panic!("{}", failure);
             }
         }
     };
@@ -210,9 +206,7 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
             let comp = AbsoluteElementwiseComparator { tol: $tol };
             let result = compare_matrices(&$x, &$y, &comp);
             if let Err(failure) = result {
-                if let Some(msg) = failure.panic_message() {
-                    panic!(msg);
-                }
+                panic!("{}", failure);
             }
         }
     };
@@ -224,9 +218,7 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
             let comp = UlpElementwiseComparator { tol: $tol };
             let result = compare_matrices(&$x, &$y, &comp);
             if let Err(failure) = result {
-                if let Some(msg) = failure.panic_message() {
-                    panic!(msg);
-                }
+                panic!("{}", failure);
             }
         }
     };
@@ -238,9 +230,7 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
             let comp = FloatElementwiseComparator::default();
             let result = compare_matrices(&$x, &$y, &comp);
             if let Err(failure) = result {
-                if let Some(msg) = failure.panic_message() {
-                    panic!(msg);
-                }
+                panic!("{}", failure);
             }
         }
     };
@@ -254,9 +244,7 @@ Please see the documentation for ways to compare matrices approximately.\n\n",
             let comp = FloatElementwiseComparator::default()$(.$key($val))+;
             let result = compare_matrices(&$x, &$y, &comp);
             if let Err(failure) = result {
-                if let Some(msg) = failure.panic_message() {
-                    panic!(msg);
-                }
+                panic!("{}", failure);
             }
         }
     };

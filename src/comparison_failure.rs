@@ -1,6 +1,7 @@
 use core::fmt;
 use crate::comparators::ComparisonFailure;
 use std::collections::HashMap;
+use std::fmt::Formatter;
 
 const MAX_MISMATCH_REPORTS: usize = 12;
 
@@ -131,21 +132,22 @@ impl<T, Error> MatrixComparisonFailure<T, Error>
     }
 }
 
-impl<T, Error> MatrixComparisonFailure<T, Error>
-    where
-        T: fmt::Display,
-        Error: ComparisonFailure,
+impl<T, Error> fmt::Display for MatrixComparisonFailure<T, Error>
+where
+    T: fmt::Display,
+    Error: ComparisonFailure,
 {
-    pub fn panic_message(&self) -> Option<String> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
             &MatrixComparisonFailure::MismatchedElements(ElementsMismatch {
-                                                            ref comparator_description,
-                                                            ref mismatches,
-                                                        }) => {
+                                                             ref comparator_description,
+                                                             ref mismatches,
+                                                         }) => {
                 // TODO: Aligned output
                 let mut formatted_mismatches = String::new();
 
                 let mismatches_overflow = mismatches.len() > MAX_MISMATCH_REPORTS;
+                // TODO: Write directly to formatter
                 let overflow_msg = if mismatches_overflow {
                     let num_hidden_entries = mismatches.len() - MAX_MISMATCH_REPORTS;
                     format!(
@@ -165,7 +167,7 @@ impl<T, Error> MatrixComparisonFailure<T, Error>
                 // Strip off the last newline from the above
                 formatted_mismatches = formatted_mismatches.trim_end().to_string();
 
-                Some(format!(
+                write!(f,
                     "\n
 Matrices X and Y have {num} mismatched element pairs.
 The mismatched elements are listed below, in the format
@@ -179,10 +181,10 @@ Comparison criterion: {description}
                     description = comparator_description,
                     mismatches = formatted_mismatches,
                     overflow_msg = overflow_msg
-                ))
+                )
             }
             &MatrixComparisonFailure::MismatchedDimensions(DimensionMismatch { dim_x, dim_y }) => {
-                Some(format!(
+                write!(f,
                     "\n
 Dimensions of matrices X and Y do not match.
  dim(X) = {x_rows} x {x_cols}
@@ -192,14 +194,14 @@ Dimensions of matrices X and Y do not match.
                     x_cols = dim_x.1,
                     y_rows = dim_y.0,
                     y_cols = dim_y.1
-                ))
+                )
             }
             // TODO
             &MatrixComparisonFailure::SparseIndicesOutOfBounds(ref _out_of_bounds) => {
-                Some("TODO: Error for out of bounds".to_string())
+                write!(f, "TODO: Error for out of bounds")
             }
             &MatrixComparisonFailure::DuplicateSparseEntries(ref _duplicate) => {
-                Some("TODO: Error for duplicate entries".to_string())
+                write!(f, "TODO: Error for duplicate entries")
             }
         }
     }
