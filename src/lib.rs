@@ -18,7 +18,7 @@ pub mod ulp;
 
 pub use self::matrix_comparison::{
     compare_matrices, DimensionMismatch, ElementsMismatch, MatrixComparisonResult,
-    MatrixElementComparisonFailure, OutOfBoundsIndices,
+    MatrixElementComparisonFailure, OutOfBoundsIndices, DuplicateEntries
 };
 pub use self::scalar_comparison::{
     compare_scalars, ScalarComparisonFailure, ScalarComparisonResult,
