@@ -8,6 +8,8 @@ mod matrix_comparison;
 #[macro_use]
 mod scalar_comparison;
 
+mod comparison_failure;
+
 #[cfg(test)]
 #[macro_use]
 extern crate quickcheck;
@@ -17,12 +19,14 @@ mod macros;
 pub mod ulp;
 
 pub use self::matrix_comparison::{
-    compare_matrices, DimensionMismatch, ElementsMismatch, MatrixComparisonResult,
-    MatrixElementComparisonFailure, OutOfBoundsIndices, DuplicateEntries
+    compare_matrices
 };
 pub use self::scalar_comparison::{
     compare_scalars, ScalarComparisonFailure, ScalarComparisonResult,
 };
+
+pub use self::comparison_failure::{DimensionMismatch, ElementsMismatch, MatrixComparisonResult,
+                                   MatrixElementComparisonFailure, OutOfBoundsIndices, DuplicateEntries};
 
 pub enum Accessor<'a, T> {
     Dense(&'a dyn DenseAccessor<T>),
