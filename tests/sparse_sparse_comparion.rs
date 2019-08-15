@@ -1,10 +1,10 @@
-use matrixcompare::compare_matrices;
 use matrixcompare::comparators::ExactElementwiseComparator;
+use matrixcompare::compare_matrices;
 use matrixcompare_mock::{sparse_matrix_strategy_i64, sparse_matrix_strategy_normal_f64};
 use proptest::prelude::*;
 
 mod common;
-use common::{MATRIX_DIM_RANGE};
+use common::MATRIX_DIM_RANGE;
 
 proptest! {
     #[test]

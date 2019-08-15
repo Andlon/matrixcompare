@@ -1,5 +1,5 @@
-use core::fmt;
 use crate::comparators::ComparisonFailure;
+use core::fmt;
 use std::collections::HashMap;
 use std::fmt::Formatter;
 
@@ -21,15 +21,15 @@ impl<T, E> MatrixElementComparisonFailure<T, E> {
             y: self.x,
             error: self.error,
             row: self.row,
-            col: self.col
+            col: self.col,
         }
     }
 }
 
 impl<T, E> fmt::Display for MatrixElementComparisonFailure<T, E>
-    where
-        T: fmt::Display,
-        E: ComparisonFailure,
+where
+    T: fmt::Display,
+    E: ComparisonFailure,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -59,7 +59,7 @@ impl DimensionMismatch {
     pub fn reverse(self) -> Self {
         Self {
             dim_x: self.dim_y,
-            dim_y: self.dim_x
+            dim_y: self.dim_x,
         }
     }
 }
@@ -74,7 +74,7 @@ impl OutOfBoundsIndices {
     pub fn reverse(self) -> Self {
         Self {
             indices_x: self.indices_y,
-            indices_y: self.indices_x
+            indices_y: self.indices_x,
         }
     }
 }
@@ -85,12 +85,15 @@ pub struct ElementsMismatch<T, Error> {
     pub mismatches: Vec<MatrixElementComparisonFailure<T, Error>>,
 }
 
-impl<T, Error> ElementsMismatch<T, Error>
-{
+impl<T, Error> ElementsMismatch<T, Error> {
     pub fn reverse(self) -> Self {
         Self {
             comparator_description: self.comparator_description,
-            mismatches: self.mismatches.into_iter().map(MatrixElementComparisonFailure::reverse).collect()
+            mismatches: self
+                .mismatches
+                .into_iter()
+                .map(MatrixElementComparisonFailure::reverse)
+                .collect(),
         }
     }
 }
@@ -105,7 +108,7 @@ impl<T> DuplicateEntries<T> {
     pub fn reverse(self) -> Self {
         Self {
             x_duplicates: self.y_duplicates,
-            y_duplicates: self.x_duplicates
+            y_duplicates: self.x_duplicates,
         }
     }
 }
@@ -118,8 +121,7 @@ pub enum MatrixComparisonFailure<T, Error> {
     DuplicateSparseEntries(DuplicateEntries<T>),
 }
 
-impl<T, Error> MatrixComparisonFailure<T, Error>
-{
+impl<T, Error> MatrixComparisonFailure<T, Error> {
     /// "Reverses" the result, in the sense that the roles of x and y are interchanged.
     pub fn reverse(self) -> Self {
         use MatrixComparisonFailure::*;
@@ -127,7 +129,7 @@ impl<T, Error> MatrixComparisonFailure<T, Error>
             MismatchedDimensions(dim) => MismatchedDimensions(dim.reverse()),
             MismatchedElements(elements) => MismatchedElements(elements.reverse()),
             SparseIndicesOutOfBounds(indices) => SparseIndicesOutOfBounds(indices.reverse()),
-            DuplicateSparseEntries(duplicates) => DuplicateSparseEntries(duplicates.reverse())
+            DuplicateSparseEntries(duplicates) => DuplicateSparseEntries(duplicates.reverse()),
         }
     }
 }
@@ -140,9 +142,9 @@ where
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
             &MatrixComparisonFailure::MismatchedElements(ElementsMismatch {
-                                                             ref comparator_description,
-                                                             ref mismatches,
-                                                         }) => {
+                ref comparator_description,
+                ref mismatches,
+            }) => {
                 // TODO: Aligned output
                 let mut formatted_mismatches = String::new();
 
@@ -167,7 +169,8 @@ where
                 // Strip off the last newline from the above
                 formatted_mismatches = formatted_mismatches.trim_end().to_string();
 
-                write!(f,
+                write!(
+                    f,
                     "\n
 Matrices X and Y have {num} mismatched element pairs.
 The mismatched elements are listed below, in the format
@@ -184,7 +187,8 @@ Comparison criterion: {description}
                 )
             }
             &MatrixComparisonFailure::MismatchedDimensions(DimensionMismatch { dim_x, dim_y }) => {
-                write!(f,
+                write!(
+                    f,
                     "\n
 Dimensions of matrices X and Y do not match.
  dim(X) = {x_rows} x {x_cols}

@@ -18,15 +18,15 @@ pub mod comparators;
 mod macros;
 pub mod ulp;
 
-pub use self::matrix_comparison::{
-    compare_matrices
-};
+pub use self::matrix_comparison::compare_matrices;
 pub use self::scalar_comparison::{
     compare_scalars, ScalarComparisonFailure, ScalarComparisonResult,
 };
 
-pub use self::comparison_failure::{DimensionMismatch, ElementsMismatch, MatrixComparisonFailure,
-                                   MatrixElementComparisonFailure, OutOfBoundsIndices, DuplicateEntries};
+pub use self::comparison_failure::{
+    DimensionMismatch, DuplicateEntries, ElementsMismatch, MatrixComparisonFailure,
+    MatrixElementComparisonFailure, OutOfBoundsIndices,
+};
 
 pub enum Accessor<'a, T> {
     Dense(&'a dyn DenseAccessor<T>),

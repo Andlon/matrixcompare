@@ -1,7 +1,7 @@
 use matrixcompare::comparators::{ElementwiseComparator, ExactElementwiseComparator, ExactError};
-use matrixcompare_mock::{MockDenseMatrix, mock_matrix, dense_matrix_strategy_i64};
 use matrixcompare::{assert_matrix_eq, ElementsMismatch};
 use matrixcompare::{compare_matrices, DimensionMismatch, MatrixComparisonFailure};
+use matrixcompare_mock::{dense_matrix_strategy_i64, mock_matrix, MockDenseMatrix};
 use quickcheck::{quickcheck, TestResult};
 
 use proptest::prelude::*;
