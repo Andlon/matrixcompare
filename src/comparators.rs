@@ -76,11 +76,91 @@ where
     }
 }
 
+/// TODO :Docs
+///
+/// Note: In order to be able to work for types that can represent fractional numbers, the relative
+/// comparator makes very few assumptions on the type. This means that it is possible to use for
+/// integers, although its use is discouraged in this case.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct RelativeElementwiseComparator<T> {
+    pub tol: T
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct RelativeError<T>(pub T);
+
+impl<T> Display for RelativeError<T>
+where
+    T: Display
+{
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "Relative error: {error}.", error = self.0)
+    }
+}
+
+fn distance<T>(x: &T, y: &T) -> T
+where
+    T: Clone + Num + PartialOrd<T>
+{
+    // Note: Cannot use num::abs because we do not want to restrict
+    // ourselves to Signed types (i.e. we still want to be able to
+    // handle unsigned types).
+    if x > y {
+        x.clone() - y.clone()
+    } else {
+        y.clone() - x.clone()
+    }
+}
+
+// Absolute value for any number, including unsigned numbers
+fn abs<T>(x: &T) -> T
+where
+    T: Clone + Num + PartialOrd<T>
+{
+    if x < &T::zero() {
+        // We do not have the `Neg` bound, so we cannot simply negate x.
+        // This wouldn't give the correct result for unsigned numbers,
+        // but they will also never land in this branch.
+        let minus_one = T::zero() - T::one();
+        minus_one * x.clone()
+    } else {
+        // Unsigned numbers will always fall into this branch.
+        x.clone()
+    }
+}
+
+impl<T> ElementwiseComparator<T> for RelativeElementwiseComparator<T>
+where
+    T: Clone + Display + Num + PartialOrd<T>,
+{
+    type Error = RelativeError<T>;
+
+    fn compare(&self, x: &T, y: &T) -> Result<(), Self::Error> {
+        if x == y {
+            Ok(())
+        } else {
+            let distance = distance(x, y);
+            let upper_bound = abs(x) + abs(y);
+            if distance <= self.tol.clone() * upper_bound.clone() {
+                Ok(())
+            } else {
+                // Note: upper_bound is only zero if x == y, but at this point
+                // we know that they are not equal, and so division by zero can never happen.
+                Err(RelativeError(distance / upper_bound))
+            }
+        }
+    }
+
+    fn description(&self) -> String {
+        format!("relative comparison, |x - y| <= {tol} * (|x| + |y|)", tol = self.tol)
+    }
+}
+
 /// The `exact` comparator used with [assert_matrix_eq!](../macro.assert_matrix_eq!.html).
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct ExactElementwiseComparator;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct ExactError;
 
 impl Display for ExactError {
@@ -221,11 +301,7 @@ ULP tolerance: {ulp}",
 
 #[cfg(test)]
 mod tests {
-    use crate::comparators::{
-        AbsoluteElementwiseComparator, AbsoluteError, ElementwiseComparator,
-        ExactElementwiseComparator, ExactError, FloatElementwiseComparator,
-        UlpElementwiseComparator, UlpError,
-    };
+    use crate::comparators::{AbsoluteElementwiseComparator, AbsoluteError, ElementwiseComparator, ExactElementwiseComparator, ExactError, FloatElementwiseComparator, UlpElementwiseComparator, UlpError, RelativeElementwiseComparator, RelativeError};
     use crate::ulp::{Ulp, UlpComparisonResult};
     use quickcheck::TestResult;
     use std::f64;
@@ -297,6 +373,37 @@ mod tests {
             let excludes_next_after_tol = comp.compare(&next_f64(tol), &0.0).is_err();
             TestResult::from_bool(includes_tol && excludes_next_after_tol)
         }
+    }
+
+    #[test]
+    pub fn relative_comparator_integer() {
+        let comp = RelativeElementwiseComparator { tol: 1 };
+
+        assert_eq!(comp.compare(&0, &0), Ok(()));
+        assert_eq!(comp.compare(&1, &0), Ok(()));
+        assert_eq!(comp.compare(&-1, &0), Ok(()));
+        assert_eq!(comp.compare(&2, &0), Ok(()));
+        assert_eq!(comp.compare(&-2, &0), Ok(()));
+
+        assert_eq!(comp.compare(&1, &1), Ok(()));
+        assert_eq!(comp.compare(&3, &4), Ok(()));
+
+        let comp = RelativeElementwiseComparator { tol: 0 };
+        assert_eq!(comp.compare(&3, &4), Err(RelativeError(0)));
+    }
+
+    #[test]
+    pub fn relative_comparator_floating_point() {
+        let comp = RelativeElementwiseComparator { tol: 0.5 };
+
+        assert_eq!(comp.compare(&0.0, &0.0), Ok(()));
+        assert_eq!(comp.compare(&1.0, &1.0), Ok(()));
+        assert_eq!(comp.compare(&-1.0, &-1.0), Ok(()));
+        assert_eq!(comp.compare(&0.5, &0.5), Ok(()));
+        assert_eq!(comp.compare(&-0.5, &-0.5), Ok(()));
+
+        // TODO: More tests
+//        assert_eq!(comp.compare(&-2.0, &0.0), Err(AbsoluteError(2.0)));
     }
 
     #[test]
