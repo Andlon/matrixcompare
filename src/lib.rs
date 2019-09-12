@@ -35,6 +35,9 @@ The mismatched elements are listed below, in the format
 Comparison criterion: absolute difference, |x - y| <= 0.00000001.
 ```
 
+See the documentation for the [assert_matrix_eq!](macro.assert_matrix_eq.html) macro for more
+information.
+
 ## Design and integration with linear algebra libraries
 
 `matrixcompare` is designed to be easy to integrate with any linear algebra library. In particular:
