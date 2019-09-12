@@ -166,8 +166,9 @@ where
     T: Float + Ulp,
 {
     pub fn default() -> Self {
+        let four = T::one() + T::one() + T::one() + T::one();
         FloatElementwiseComparator {
-            abs: AbsoluteElementwiseComparator { tol: T::epsilon() },
+            abs: AbsoluteElementwiseComparator { tol: four * T::epsilon() },
             ulp: UlpElementwiseComparator { tol: 4 },
         }
     }
