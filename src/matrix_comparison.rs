@@ -43,8 +43,8 @@ where
 }
 
 fn compare_sparse_sparse<T, C>(
-    x: &SparseAccessor<T>,
-    y: &SparseAccessor<T>,
+    x: &dyn SparseAccessor<T>,
+    y: &dyn SparseAccessor<T>,
     comparator: &C,
 ) -> Result<(), MatrixComparisonFailure<T, C::Error>>
 where
@@ -133,8 +133,8 @@ fn find_out_of_bounds_indices<T>(
 }
 
 fn compare_dense_sparse<T, C>(
-    x: &DenseAccessor<T>,
-    y: &SparseAccessor<T>,
+    x: &dyn DenseAccessor<T>,
+    y: &dyn SparseAccessor<T>,
     comparator: &C,
     swap_order: bool,
 ) -> Result<(), MatrixComparisonFailure<T, C::Error>>
@@ -202,8 +202,8 @@ where
 }
 
 fn compare_dense_dense<T, C>(
-    x: &DenseAccessor<T>,
-    y: &DenseAccessor<T>,
+    x: &dyn DenseAccessor<T>,
+    y: &dyn DenseAccessor<T>,
     comparator: &C,
 ) -> Result<(), MatrixComparisonFailure<T, C::Error>>
 where
