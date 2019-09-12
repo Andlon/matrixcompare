@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 num = "0.2"
+matrixcompare-core = { path = "matrixcompare-core", version="0.1"}
 
 [dev-dependencies]
 quickcheck = "0.8.3"
