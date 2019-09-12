@@ -55,7 +55,7 @@ pub fn scalar_eq_exact_compare_self_for_integer() {
 #[test]
 pub fn scalar_eq_exact_compare_self_for_floating_point() {
     let x = 2.0;
-    assert_scalar_eq!(x, x, comp = exact);;
+    assert_scalar_eq!(x, x, comp = exact);
 }
 
 #[test]

@@ -1,6 +1,6 @@
 use core::fmt;
 use std::collections::HashMap;
-use std::fmt::{Formatter, Display};
+use std::fmt::{Display, Formatter};
 
 const MAX_MISMATCH_REPORTS: usize = 12;
 
@@ -37,7 +37,8 @@ where
             i = self.row,
             j = self.col,
             x = self.x,
-            y = self.y)?;
+            y = self.y
+        )?;
         write!(f, "{}", self.error)
     }
 }
@@ -111,7 +112,7 @@ impl<T, Error> ElementsMismatch<T, Error> {
 impl<T, Error> Display for ElementsMismatch<T, Error>
 where
     T: Display,
-    Error: Display
+    Error: Display,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         // TODO: Aligned output
@@ -200,12 +201,8 @@ where
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
-            &MatrixComparisonFailure::MismatchedElements(ref mismatch) => {
-                mismatch.fmt(f)
-            }
-            &MatrixComparisonFailure::MismatchedDimensions(ref mismatch) => {
-                mismatch.fmt(f)
-            }
+            &MatrixComparisonFailure::MismatchedElements(ref mismatch) => mismatch.fmt(f),
+            &MatrixComparisonFailure::MismatchedDimensions(ref mismatch) => mismatch.fmt(f),
             // TODO
             &MatrixComparisonFailure::SparseIndicesOutOfBounds(ref _out_of_bounds) => {
                 write!(f, "TODO: Error for out of bounds")

@@ -1,10 +1,9 @@
 use std::fmt;
 
-use crate::comparators::{ElementwiseComparator};
+use crate::comparators::ElementwiseComparator;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct ScalarComparisonFailure<T, E>
-{
+pub struct ScalarComparisonFailure<T, E> {
     pub x: T,
     pub y: T,
     pub error: E,

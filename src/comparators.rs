@@ -5,7 +5,7 @@ use crate::ulp::{Ulp, UlpComparisonResult};
 use num::{Float, Num};
 
 use std::fmt;
-use std::fmt::{Formatter, Display};
+use std::fmt::{Display, Formatter};
 
 /// Trait that describes elementwise comparators for [assert_matrix_eq!](../macro.assert_matrix_eq!.html).
 ///
@@ -125,9 +125,7 @@ impl Display for UlpError {
             UlpComparisonResult::Difference(diff) => {
                 write!(f, "Difference: {diff} ULP.", diff = diff)
             }
-            UlpComparisonResult::IncompatibleSigns => {
-                write!(f, "Numbers have incompatible signs.")
-            }
+            UlpComparisonResult::IncompatibleSigns => write!(f, "Numbers have incompatible signs."),
             _ => Ok(()),
         }
     }
@@ -221,7 +219,11 @@ ULP tolerance: {ulp}",
 
 #[cfg(test)]
 mod tests {
-    use crate::comparators::{AbsoluteElementwiseComparator, AbsoluteError, ElementwiseComparator, ExactElementwiseComparator, ExactError, FloatElementwiseComparator, UlpElementwiseComparator, UlpError};
+    use crate::comparators::{
+        AbsoluteElementwiseComparator, AbsoluteError, ElementwiseComparator,
+        ExactElementwiseComparator, ExactError, FloatElementwiseComparator,
+        UlpElementwiseComparator, UlpError,
+    };
     use crate::ulp::{Ulp, UlpComparisonResult};
     use quickcheck::TestResult;
     use std::f64;
@@ -374,7 +376,7 @@ mod tests {
         assert_eq!(
             comp.compare(&f64::NAN, &0.0),
             Err(UlpError(UlpComparisonResult::Nan))
-        );;
+        );
     }
 
     quickcheck! {
