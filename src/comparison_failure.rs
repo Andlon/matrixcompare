@@ -229,6 +229,14 @@ pub enum MatrixComparisonFailure<T, Error> {
     DuplicateSparseEntries(DuplicateEntries<T>),
 }
 
+impl<T, E> std::error::Error for MatrixComparisonFailure<T, E>
+where
+    T: fmt::Debug + Display,
+    E: fmt::Debug + Display
+{
+
+}
+
 impl<T, Error> MatrixComparisonFailure<T, Error> {
     /// "Reverses" the result, in the sense that the roles of x and y are interchanged.
     pub fn reverse(self) -> Self {
