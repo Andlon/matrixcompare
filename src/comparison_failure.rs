@@ -90,6 +90,24 @@ impl OutOfBoundsIndices {
     }
 }
 
+impl Display for OutOfBoundsIndices {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        if !self.indices_x.is_empty() {
+            writeln!(f, "Out of bounds indices in X:")?;
+            for (i, j) in &self.indices_x {
+                writeln!(f, "    ({}, {}", i, j)?;
+            }
+        }
+        if !self.indices_y.is_empty() {
+            writeln!(f, "Out of bounds indices in Y:")?;
+            for (i, j) in &self.indices_y {
+                writeln!(f, "    ({}, {}", i, j)?;
+            }
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct ElementsMismatch<T, Error> {
     pub comparator_description: String,
@@ -165,11 +183,41 @@ pub struct DuplicateEntries<T> {
 }
 
 impl<T> DuplicateEntries<T> {
+    // TODO: Remove these reverse impls, as they would only lead to confusing error messages.
+    // IIRC we only use it for testing symmetry properties, which we can do in some other
+    // way.
     pub fn reverse(self) -> Self {
         Self {
             x_duplicates: self.y_duplicates,
             y_duplicates: self.x_duplicates,
         }
+    }
+}
+
+impl<T> Display for DuplicateEntries<T>
+where
+    T: Display
+{
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        writeln!(f, "Duplicate entries detected in input matrix.")?;
+
+        let mut print_duplicates = |name, duplicates: &HashMap<_, _>| {
+            if !duplicates.is_empty() {
+                writeln!(f, "Duplicate entries in {}:", name)?;
+                for ((i, j), values) in duplicates {
+                    write!(f, "    ({}, {}): ", i, j)?;
+                    for v in values {
+                        write!(f, "{}, ", v)?;
+                    }
+                    writeln!(f)?;
+                }
+            }
+            Ok(())
+        };
+
+        print_duplicates("X", &self.x_duplicates)?;
+        print_duplicates("Y", &self.y_duplicates)?;
+        Ok(())
     }
 }
 
@@ -203,13 +251,8 @@ where
         match self {
             &MatrixComparisonFailure::MismatchedElements(ref mismatch) => mismatch.fmt(f),
             &MatrixComparisonFailure::MismatchedDimensions(ref mismatch) => mismatch.fmt(f),
-            // TODO
-            &MatrixComparisonFailure::SparseIndicesOutOfBounds(ref _out_of_bounds) => {
-                write!(f, "TODO: Error for out of bounds")
-            }
-            &MatrixComparisonFailure::DuplicateSparseEntries(ref _duplicate) => {
-                write!(f, "TODO: Error for duplicate entries")
-            }
+            &MatrixComparisonFailure::SparseIndicesOutOfBounds(ref out_of_bounds) => out_of_bounds.fmt(f),
+            &MatrixComparisonFailure::DuplicateSparseEntries(ref duplicate) => duplicate.fmt(f)
         }
     }
 }
