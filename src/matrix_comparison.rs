@@ -1,7 +1,7 @@
 use crate::comparators::ElementwiseComparator;
 use crate::{
-    Accessor, DenseAccessor, DimensionMismatch, DuplicateEntries, ElementsMismatch, Matrix,
-    MatrixComparisonFailure, MatrixElementComparisonFailure, OutOfBoundsIndices, SparseAccessor,
+    Access, DenseAccess, DimensionMismatch, DuplicateEntries, ElementsMismatch, Matrix,
+    MatrixComparisonFailure, MatrixElementComparisonFailure, OutOfBoundsIndices, SparseAccess,
 };
 use num::Zero;
 use std::collections::{HashMap, HashSet};
@@ -43,8 +43,8 @@ where
 }
 
 fn compare_sparse_sparse<T, C>(
-    x: &dyn SparseAccessor<T>,
-    y: &dyn SparseAccessor<T>,
+    x: &dyn SparseAccess<T>,
+    y: &dyn SparseAccess<T>,
     comparator: &C,
 ) -> Result<(), MatrixComparisonFailure<T, C::Error>>
 where
@@ -133,8 +133,8 @@ fn find_out_of_bounds_indices<T>(
 }
 
 fn compare_dense_sparse<T, C>(
-    x: &dyn DenseAccessor<T>,
-    y: &dyn SparseAccessor<T>,
+    x: &dyn DenseAccess<T>,
+    y: &dyn SparseAccess<T>,
     comparator: &C,
     swap_order: bool,
 ) -> Result<(), MatrixComparisonFailure<T, C::Error>>
@@ -202,8 +202,8 @@ where
 }
 
 fn compare_dense_dense<T, C>(
-    x: &dyn DenseAccessor<T>,
-    y: &dyn DenseAccessor<T>,
+    x: &dyn DenseAccess<T>,
+    y: &dyn DenseAccess<T>,
     comparator: &C,
 ) -> Result<(), MatrixComparisonFailure<T, C::Error>>
 where
@@ -253,7 +253,7 @@ where
 {
     let shapes_match = x.rows() == y.rows() && x.cols() == y.cols();
     if shapes_match {
-        use Accessor::{Dense, Sparse};
+        use Access::{Dense, Sparse};
         let result = match (x.access(), y.access()) {
             (Dense(x_access), Dense(y_access)) => {
                 compare_dense_dense(x_access, y_access, comparator)

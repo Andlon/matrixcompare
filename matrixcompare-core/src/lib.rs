@@ -1,20 +1,21 @@
-pub enum Accessor<'a, T> {
-    Dense(&'a dyn DenseAccessor<T>),
-    Sparse(&'a dyn SparseAccessor<T>),
+/// Defines how the elements of a matrix may be accessed.
+pub enum Access<'a, T> {
+    Dense(&'a dyn DenseAccess<T>),
+    Sparse(&'a dyn SparseAccess<T>),
 }
 
 pub trait Matrix<T> {
     fn rows(&self) -> usize;
     fn cols(&self) -> usize;
 
-    fn access(&self) -> Accessor<T>;
+    fn access(&self) -> Access<T>;
 }
 
-pub trait DenseAccessor<T>: Matrix<T> {
+pub trait DenseAccess<T>: Matrix<T> {
     fn fetch_single(&self, row: usize, col: usize) -> T;
 }
 
-pub trait SparseAccessor<T>: Matrix<T> {
+pub trait SparseAccess<T>: Matrix<T> {
     fn nnz(&self) -> usize;
     fn fetch_triplets(&self) -> Vec<(usize, usize, T)>;
 }
@@ -31,23 +32,23 @@ impl<T, X> Matrix<T> for &X
         X::cols(*self)
     }
 
-    fn access(&self) -> Accessor<T> {
+    fn access(&self) -> Access<T> {
         X::access(*self)
     }
 }
 
-impl<T, X> DenseAccessor<T> for &X
+impl<T, X> DenseAccess<T> for &X
     where
-        X: DenseAccessor<T>,
+        X: DenseAccess<T>,
 {
     fn fetch_single(&self, row: usize, col: usize) -> T {
         X::fetch_single(*self, row, col)
     }
 }
 
-impl<T, X> SparseAccessor<T> for &X
+impl<T, X> SparseAccess<T> for &X
     where
-        X: SparseAccessor<T>,
+        X: SparseAccess<T>,
 {
     fn nnz(&self) -> usize {
         X::nnz(*self)

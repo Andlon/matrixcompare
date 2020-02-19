@@ -2,7 +2,7 @@
 //! `matrixcompare` crate. Not intended for usage outside of
 //! `matrixcompare` tests.
 
-use matrixcompare::{Accessor, DenseAccessor, Matrix, SparseAccessor};
+use matrixcompare::{Access, DenseAccess, Matrix, SparseAccess};
 use proptest::prelude::*;
 use std::fmt::Debug;
 
@@ -82,12 +82,12 @@ impl<T: Clone> Matrix<T> for MockDenseMatrix<T> {
         self.cols
     }
 
-    fn access(&self) -> Accessor<T> {
-        Accessor::Dense(self)
+    fn access(&self) -> Access<T> {
+        Access::Dense(self)
     }
 }
 
-impl<T: Clone> DenseAccessor<T> for MockDenseMatrix<T> {
+impl<T: Clone> DenseAccess<T> for MockDenseMatrix<T> {
     fn fetch_single(&self, row: usize, col: usize) -> T {
         let idx = row * self.cols + col;
         self.data[idx].clone()
@@ -103,12 +103,12 @@ impl<T: Clone> Matrix<T> for MockSparseMatrix<T> {
         self.shape.1
     }
 
-    fn access(&self) -> Accessor<T> {
-        Accessor::Sparse(self)
+    fn access(&self) -> Access<T> {
+        Access::Sparse(self)
     }
 }
 
-impl<T: Clone> SparseAccessor<T> for MockSparseMatrix<T> {
+impl<T: Clone> SparseAccess<T> for MockSparseMatrix<T> {
     fn nnz(&self) -> usize {
         self.triplets.len()
     }
