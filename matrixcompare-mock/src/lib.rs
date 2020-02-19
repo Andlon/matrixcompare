@@ -136,7 +136,7 @@ macro_rules! mock_matrix {
             let data_as_nested_array = [ $( [ $($x),* ] ),* ];
             let rows = data_as_nested_array.len();
             let cols = data_as_nested_array[0].len();
-            let data_as_flat_array: Vec<_> = data_as_nested_array.into_iter()
+            let data_as_flat_array: Vec<_> = data_as_nested_array.iter()
                 .flat_map(|row| row.into_iter())
                 .cloned()
                 .collect();
