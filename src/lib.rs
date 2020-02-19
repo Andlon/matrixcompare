@@ -46,7 +46,7 @@ information.
 the standard library, and only contains a very small amount of code that defines the interface
 through which the rest of `matrixcompare` is able to access the data contained in matrices.
 - The `core` split allows the actual comparison logic and output format to evolve separately
-from the `core` crate. This way we can minimize breking changes in `matrixcompare-core` and
+from the `core` crate. This way we can minimize breaking changes in `matrixcompare-core` and
 hopefully relatively soon stabilize it, without having to stabilize the entire `matrixcompare` crate.
 - Linear algebra library authors should only depend on and implement the traits in
 `matrixcompare-core`, while end users can use any functionality provided in `matrixcompare`.
