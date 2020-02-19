@@ -275,7 +275,10 @@ macro_rules! assert_scalar_eq {
             use $crate::{compare_scalars};
             use $crate::comparators::ExactElementwiseComparator;
             let comp = ExactElementwiseComparator;
-            let result = compare_scalars(&$x, &$y, comp);
+            // TODO: The clone here is only done to make sure that we can handle both
+            // e.g. &3 and &&3. It seems safer to assume that scalars implement `Clone`
+            // than e.g. `AsRef`. Is there a better approach, however?
+            let result = compare_scalars(&$x.clone(), &$y.clone(), comp);
             if let Err(error) = result {
                 panic!("{}\n\
                         Please see the documentation for ways to compare scalars approximately.\n\n",
@@ -288,7 +291,7 @@ macro_rules! assert_scalar_eq {
             use $crate::{compare_scalars};
             use $crate::comparators::ExactElementwiseComparator;
             let comp = ExactElementwiseComparator;
-            let result = compare_scalars(&$x, &$y, comp);
+            let result = compare_scalars(&$x.clone(), &$y.clone(), comp);
             if let Err(error) = result {
                 panic!(error);
             }
