@@ -274,11 +274,9 @@ macro_rules! assert_scalar_eq {
         {
             use $crate::{compare_scalars};
             use $crate::comparators::ExactElementwiseComparator;
+            use std::borrow::Borrow;
             let comp = ExactElementwiseComparator;
-            // TODO: The clone here is only done to make sure that we can handle both
-            // e.g. &3 and &&3. It seems safer to assume that scalars implement `Clone`
-            // than e.g. `AsRef`. Is there a better approach, however?
-            let result = compare_scalars(&$x.clone(), &$y.clone(), comp);
+            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
             if let Err(error) = result {
                 panic!("{}\n\
                         Please see the documentation for ways to compare scalars approximately.\n\n",
@@ -290,8 +288,9 @@ macro_rules! assert_scalar_eq {
         {
             use $crate::{compare_scalars};
             use $crate::comparators::ExactElementwiseComparator;
+            use std::borrow::Borrow;
             let comp = ExactElementwiseComparator;
-            let result = compare_scalars(&$x.clone(), &$y.clone(), comp);
+            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
             if let Err(error) = result {
                 panic!(error);
             }
@@ -301,8 +300,9 @@ macro_rules! assert_scalar_eq {
         {
             use $crate::{compare_scalars};
             use $crate::comparators::AbsoluteElementwiseComparator;
+            use std::borrow::Borrow;
             let comp = AbsoluteElementwiseComparator { tol: $tol.clone() };
-            let result = compare_scalars(&$x.clone(), &$y.clone(), comp);
+            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
             if let Err(error) = result {
                 panic!(error);
             }
@@ -312,8 +312,9 @@ macro_rules! assert_scalar_eq {
         {
             use $crate::{compare_scalars};
             use $crate::comparators::UlpElementwiseComparator;
+            use std::borrow::Borrow;
             let comp = UlpElementwiseComparator { tol: $tol.clone() };
-            let result = compare_scalars(&$x.clone(), &$y.clone(), comp);
+            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
             if let Err(error) = result {
                 panic!(error);
             }
@@ -323,8 +324,9 @@ macro_rules! assert_scalar_eq {
         {
             use $crate::{compare_scalars};
             use $crate::comparators::FloatElementwiseComparator;
+            use std::borrow::Borrow;
             let comp = FloatElementwiseComparator::default();
-            let result = compare_scalars(&$x.clone(), &$y.clone(), comp);
+            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
             if let Err(error) = result {
                 panic!(error);
             }
@@ -336,8 +338,9 @@ macro_rules! assert_scalar_eq {
         {
             use $crate::{compare_scalars};
             use $crate::comparators::FloatElementwiseComparator;
+            use std::borrow::Borrow;
             let comp = FloatElementwiseComparator::default()$(.$key($val))+;
-            let result = compare_scalars(&$x.clone(), &$y.clone(), comp);
+            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
             if let Err(error) = result {
                 panic!(error);
             }
