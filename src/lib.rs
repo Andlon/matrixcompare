@@ -11,7 +11,7 @@ in the matrices failed to compare (approximately) equal.
 
 Consider the following contrived example.
 
-```rust
+```rust,should_panic
 # use matrixcompare::assert_matrix_eq; use matrixcompare_mock::mock_matrix;
 fn main() {
     let a = mock_matrix![1.00, 2.00;
