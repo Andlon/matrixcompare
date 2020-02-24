@@ -7,7 +7,7 @@ pub struct ScalarComparisonFailure<T, E> {
     pub x: T,
     pub y: T,
     pub error: E,
-    pub comparator_description: String
+    pub comparator_description: String,
 }
 
 impl<T, E> fmt::Display for ScalarComparisonFailure<T, E>
@@ -25,17 +25,21 @@ where
     }
 }
 
-pub fn compare_scalars<T, C>(x: &T, y: &T, comparator: C) -> Result<(), ScalarComparisonFailure<T, C::Error>>
+pub fn compare_scalars<T, C>(
+    x: &T,
+    y: &T,
+    comparator: C,
+) -> Result<(), ScalarComparisonFailure<T, C::Error>>
 where
     T: Clone,
     C: ElementwiseComparator<T>,
 {
-    comparator.compare(x, y).map_err(|error|
-        ScalarComparisonFailure {
+    comparator
+        .compare(x, y)
+        .map_err(|error| ScalarComparisonFailure {
             comparator_description: comparator.description(),
             x: x.clone(),
             y: y.clone(),
             error,
-        }
-    )
+        })
 }

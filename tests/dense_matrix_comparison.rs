@@ -169,7 +169,7 @@ pub fn matrix_eq_absolute_compare_self_for_integer() {
 #[test]
 pub fn matrix_eq_absolute_compare_self_for_floating_point() {
     let x = MockDenseMatrix::from_row_major(2, 3, vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
-    assert_matrix_eq!(x, x, comp = abs, tol = 1e-10);
+    assert_matrix_eq!(x, x, comp = abs, tol = 0.0);
 }
 
 #[test]

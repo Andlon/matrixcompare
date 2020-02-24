@@ -196,7 +196,7 @@ impl<T> DuplicateEntries<T> {
 
 impl<T> Display for DuplicateEntries<T>
 where
-    T: Display
+    T: Display,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         writeln!(f, "Duplicate entries detected in input matrix.")?;
@@ -232,9 +232,8 @@ pub enum MatrixComparisonFailure<T, Error> {
 impl<T, E> std::error::Error for MatrixComparisonFailure<T, E>
 where
     T: fmt::Debug + Display,
-    E: fmt::Debug + Display
+    E: fmt::Debug + Display,
 {
-
 }
 
 impl<T, Error> MatrixComparisonFailure<T, Error> {
@@ -259,8 +258,10 @@ where
         match self {
             &MatrixComparisonFailure::MismatchedElements(ref mismatch) => mismatch.fmt(f),
             &MatrixComparisonFailure::MismatchedDimensions(ref mismatch) => mismatch.fmt(f),
-            &MatrixComparisonFailure::SparseIndicesOutOfBounds(ref out_of_bounds) => out_of_bounds.fmt(f),
-            &MatrixComparisonFailure::DuplicateSparseEntries(ref duplicate) => duplicate.fmt(f)
+            &MatrixComparisonFailure::SparseIndicesOutOfBounds(ref out_of_bounds) => {
+                out_of_bounds.fmt(f)
+            }
+            &MatrixComparisonFailure::DuplicateSparseEntries(ref duplicate) => duplicate.fmt(f),
         }
     }
 }

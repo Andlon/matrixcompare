@@ -1,5 +1,5 @@
 use matrixcompare::assert_scalar_eq;
-use matrixcompare::comparators::{ExactElementwiseComparator, ExactError, ElementwiseComparator};
+use matrixcompare::comparators::{ElementwiseComparator, ExactElementwiseComparator, ExactError};
 use matrixcompare::compare_scalars;
 
 #[test]
@@ -13,10 +13,10 @@ fn scalar_comparison_reports_correct_mismatch() {
         let y = 0.3;
 
         let expected_err = ScalarComparisonFailure {
-                x: 0.2,
-                y: 0.3,
-                error: ExactError,
-                comparator_description: ElementwiseComparator::<f64>::description(&comp)
+            x: 0.2,
+            y: 0.3,
+            error: ExactError,
+            comparator_description: ElementwiseComparator::<f64>::description(&comp),
         };
 
         assert_eq!(compare_scalars(&x, &y, comp).unwrap_err(), expected_err);
