@@ -18,26 +18,26 @@ pub struct MockDenseMatrix<T> {
 #[derive(Clone, Debug)]
 pub struct MockSparseMatrix<T> {
     shape: (usize, usize),
-    triplets: Vec<(usize, usize, T)>
+    triplets: Vec<(usize, usize, T)>,
 }
 
 impl<T> MockSparseMatrix<T> {
     pub fn from_triplets(rows: usize, cols: usize, triplets: Vec<(usize, usize, T)>) -> Self {
         Self {
             shape: (rows, cols),
-            triplets
+            triplets,
         }
     }
 }
 
 impl<T> MockSparseMatrix<T>
-    where T: Zero + Clone
+where
+    T: Zero + Clone,
 {
     pub fn to_dense(&self) -> Result<MockDenseMatrix<T>, ()> {
         let (r, c) = (self.rows(), self.cols());
-        let mut result = MockDenseMatrix::from_row_major(self.rows(),
-                                                         self.cols(),
-                                                         vec![T::zero(); r * c]);
+        let mut result =
+            MockDenseMatrix::from_row_major(self.rows(), self.cols(), vec![T::zero(); r * c]);
         for (i, j, v) in &self.triplets {
             *result.get_mut(*i, *j).ok_or(())? = v.clone();
         }
@@ -69,7 +69,8 @@ impl<T> MockDenseMatrix<T> {
     }
 
     pub fn get_mut(&mut self, i: usize, j: usize) -> Option<&mut T> {
-        self.get_linear_index(i, j).map(move |idx| &mut self.data[idx])
+        self.get_linear_index(i, j)
+            .map(move |idx| &mut self.data[idx])
     }
 }
 
@@ -145,13 +146,14 @@ macro_rules! mock_matrix {
     }
 }
 
-pub fn dense_matrix_strategy<T, S>(rows: impl Strategy<Value=usize>,
-                                   cols: impl Strategy<Value=usize>,
-                               strategy: S)
-    -> impl Strategy<Value=MockDenseMatrix<T>>
+pub fn dense_matrix_strategy<T, S>(
+    rows: impl Strategy<Value = usize>,
+    cols: impl Strategy<Value = usize>,
+    strategy: S,
+) -> impl Strategy<Value = MockDenseMatrix<T>>
 where
     T: Debug,
-    S: Clone + Strategy<Value = T>
+    S: Clone + Strategy<Value = T>,
 {
     (rows, cols).prop_flat_map(move |(r, c)| {
         proptest::collection::vec(strategy.clone(), r * c)
@@ -159,63 +161,67 @@ where
     })
 }
 
-pub fn dense_matrix_strategy_i64(rows: impl Strategy<Value=usize>, cols: impl Strategy<Value=usize>)
-    -> impl Strategy<Value=MockDenseMatrix<i64>> {
+pub fn dense_matrix_strategy_i64(
+    rows: impl Strategy<Value = usize>,
+    cols: impl Strategy<Value = usize>,
+) -> impl Strategy<Value = MockDenseMatrix<i64>> {
     dense_matrix_strategy(rows, cols, proptest::num::i64::ANY)
 }
 
 /// A strategy for "normal" f64 numbers (excluding infinities, NaN).
-pub fn dense_matrix_strategy_normal_f64(rows: impl Strategy<Value=usize>, cols: impl Strategy<Value=usize>)
-                                   -> impl Strategy<Value=MockDenseMatrix<f64>> {
+pub fn dense_matrix_strategy_normal_f64(
+    rows: impl Strategy<Value = usize>,
+    cols: impl Strategy<Value = usize>,
+) -> impl Strategy<Value = MockDenseMatrix<f64>> {
     dense_matrix_strategy(rows, cols, proptest::num::f64::NORMAL)
 }
 
-pub fn sparse_matrix_strategy<T, S>(rows: impl Strategy<Value=usize>, cols: impl Strategy<Value=usize>, strategy: S)
-    -> impl Strategy<Value = MockSparseMatrix<T>>
-where T: Debug,
-      S: Clone + Strategy<Value = T>
+pub fn sparse_matrix_strategy<T, S>(
+    rows: impl Strategy<Value = usize>,
+    cols: impl Strategy<Value = usize>,
+    strategy: S,
+) -> impl Strategy<Value = MockSparseMatrix<T>>
+where
+    T: Debug,
+    S: Clone + Strategy<Value = T>,
 {
     // Generate sparse matrices by generating hash maps whose keys (ij entries) are in bounds
     // and values are picked from the supplied strategy
     (rows, cols).prop_flat_map(move |(r, c)| {
         let max_nnz = r * c;
-        let ij_strategy = (0 .. r, 0 .. c);
+        let ij_strategy = (0..r, 0..c);
         let values_strategy = strategy.clone();
-        proptest::collection::hash_map(ij_strategy, values_strategy, 0 ..= max_nnz)
-            .prop_map(|mut hash_matrix| hash_matrix
-                .drain()
-                .map(|((i, j), v)| (i, j, v))
-                .collect())
+        proptest::collection::hash_map(ij_strategy, values_strategy, 0..=max_nnz)
+            .prop_map(|mut hash_matrix| hash_matrix.drain().map(|((i, j), v)| (i, j, v)).collect())
             .prop_map(move |triplets| MockSparseMatrix::from_triplets(r, c, triplets))
     })
 }
 
-pub fn sparse_matrix_strategy_i64(rows: impl Strategy<Value=usize>, cols: impl Strategy<Value=usize>)
-    -> impl Strategy<Value=MockSparseMatrix<i64>>
-{
+pub fn sparse_matrix_strategy_i64(
+    rows: impl Strategy<Value = usize>,
+    cols: impl Strategy<Value = usize>,
+) -> impl Strategy<Value = MockSparseMatrix<i64>> {
     sparse_matrix_strategy(rows, cols, proptest::num::i64::ANY)
 }
 
-pub fn sparse_matrix_strategy_normal_f64(rows: impl Strategy<Value=usize>, cols: impl Strategy<Value=usize>)
-                                  -> impl Strategy<Value=MockSparseMatrix<f64>>
-{
+pub fn sparse_matrix_strategy_normal_f64(
+    rows: impl Strategy<Value = usize>,
+    cols: impl Strategy<Value = usize>,
+) -> impl Strategy<Value = MockSparseMatrix<f64>> {
     sparse_matrix_strategy(rows, cols, proptest::num::f64::NORMAL)
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{MockSparseMatrix, mock_matrix};
+    use crate::{mock_matrix, MockSparseMatrix};
     use matrixcompare::assert_matrix_eq;
 
     #[test]
     fn sparse_to_dense() {
-        let triplets = vec![
-            (0, 0, 3),
-            (1, 0, 2),
-            (0, 3, 1),
-            (0, 2, 2)
-        ];
-        let matrix = MockSparseMatrix::from_triplets(2, 4, triplets).to_dense().unwrap();
+        let triplets = vec![(0, 0, 3), (1, 0, 2), (0, 3, 1), (0, 2, 2)];
+        let matrix = MockSparseMatrix::from_triplets(2, 4, triplets)
+            .to_dense()
+            .unwrap();
         let expected = mock_matrix![
             3, 0, 2, 1;
             2, 0, 0, 0
