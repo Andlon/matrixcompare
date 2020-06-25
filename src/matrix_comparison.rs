@@ -168,12 +168,21 @@ where
         let y_hash = try_build_hash_map_from_triplets(&y_triplets);
 
         if let Err(y_duplicates) = y_hash {
-            Err(MatrixComparisonFailure::DuplicateSparseEntries(
-                DuplicateEntries {
-                    x_duplicates: HashMap::new(),
-                    y_duplicates,
-                },
-            ))
+            if swap_order {
+                Err(MatrixComparisonFailure::DuplicateSparseEntries(
+                    DuplicateEntries {
+                        x_duplicates: y_duplicates,
+                        y_duplicates: HashMap::default()
+                    },
+                ))
+            } else {
+                Err(MatrixComparisonFailure::DuplicateSparseEntries(
+                    DuplicateEntries {
+                        x_duplicates: HashMap::default(),
+                        y_duplicates
+                    },
+                ))
+            }
         } else {
             let mut mismatches = Vec::new();
             let y_hash = y_hash.ok().unwrap();

@@ -1,5 +1,5 @@
 use matrixcompare::comparators::ExactElementwiseComparator;
-use matrixcompare::{compare_matrices, MatrixComparisonFailure, OutOfBoundsIndices};
+use matrixcompare::{compare_matrices, MatrixComparisonFailure, OutOfBoundsIndices, DuplicateEntries};
 use matrixcompare_core::Matrix;
 use matrixcompare_mock::{
     dense_matrix_strategy_i64, dense_matrix_strategy_normal_f64, i64_range, mock_matrix,
@@ -10,6 +10,8 @@ use proptest::prelude::*;
 
 mod common;
 use common::MATRIX_DIM_RANGE;
+use std::collections::HashMap;
+use std::iter::FromIterator;
 
 #[test]
 fn dense_sparse_index_out_of_bounds() {
@@ -73,7 +75,34 @@ fn dense_sparse_index_out_of_bounds() {
 }
 
 #[test]
-fn dense_sparse_duplicate_entries() {}
+fn dense_sparse_duplicate_entries() {
+    use MatrixComparisonFailure::DuplicateSparseEntries;
+
+    let dense = mock_matrix![1, 2, 3;
+                             4, 5, 6];
+    let sparse = MockSparseMatrix::from_triplets(2, 3, vec![(0, 1, -3),
+                                                            (1, 0, 6),
+                                                            (1, 0, 3),
+                                                            (1, 2, 1)]);
+
+    // Dense-sparse
+    {
+        let result = compare_matrices(&dense, &sparse, &ExactElementwiseComparator);
+        assert_eq!(result, Err(DuplicateSparseEntries(DuplicateEntries {
+            x_duplicates: HashMap::default(),
+            y_duplicates: HashMap::from_iter(vec![((1, 0), vec![6, 3])])
+        })));
+    }
+
+    // Sparse-dense
+    {
+        let result = compare_matrices(&sparse, &dense, &ExactElementwiseComparator);
+        assert_eq!(result, Err(DuplicateSparseEntries(DuplicateEntries {
+            x_duplicates: HashMap::from_iter(vec![((1, 0), vec![6, 3])]),
+            y_duplicates: HashMap::default(),
+        })));
+    }
+}
 
 /// A strategy producing pairs of dense and sparse matrices with the same dimensions.
 fn same_size_dense_sparse_matrices(
