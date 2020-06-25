@@ -5,3 +5,5 @@
 # It is recommended to check this file in to source control so that
 # everyone who runs the test benefits from these saved cases.
 cc dc3ccde4596b2ab0724ad1ea97bd4e76f7e46d1317acb03700e39a16c86f32de # shrinks to dense = MockDenseMatrix { data: [0, 0, 0, 0, 0, 0, 0, 0, 0], rows: 3, cols: 3 }, sparse = MockSparseMatrix { shape: (3, 3), triplets: [(1, 2, -8218762906724931723), (0, 2, 6961275258266009436), (1, 0, -4352247814799999590), (1, 1, 6613993477556718397)] }
+cc 357b60a6d60a21fd5f0c6812f7a85ad47af5b4762749b4dcdf072180016eaaf6 # shrinks to (dense, sparse, mut out_of_bounds_triplets) = (MockDenseMatrix { data: [], rows: 0, cols: 0 }, MockSparseMatrix { shape: (0, 0), triplets: [(0, 0, 0)] }, [(0, 0, 0)])
+cc f6051054b5f9b8d54e787e0a8432736ef01e5aefd02246708502e62be4315860 # shrinks to (dense, sparse, mut out_of_bounds_triplets) = (MockDenseMatrix { data: [], rows: 0, cols: 1 }, MockSparseMatrix { shape: (0, 1), triplets: [(0, 1, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0)] }, [(0, 1, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0)])

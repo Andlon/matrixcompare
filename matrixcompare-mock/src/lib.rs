@@ -7,6 +7,7 @@ use proptest::prelude::*;
 use std::fmt::Debug;
 
 use num::Zero;
+use std::ops::Range;
 
 #[derive(Clone, Debug)]
 pub struct MockDenseMatrix<T> {
@@ -27,6 +28,10 @@ impl<T> MockSparseMatrix<T> {
             shape: (rows, cols),
             triplets,
         }
+    }
+
+    pub fn take_triplets(self) -> Vec<(usize, usize, T)> {
+        self.triplets
     }
 }
 
@@ -146,6 +151,10 @@ macro_rules! mock_matrix {
     }
 }
 
+pub fn i64_range() -> Range<i64> {
+    -100i64 .. 100
+}
+
 pub fn dense_matrix_strategy<T, S>(
     rows: impl Strategy<Value = usize>,
     cols: impl Strategy<Value = usize>,
@@ -165,7 +174,7 @@ pub fn dense_matrix_strategy_i64(
     rows: impl Strategy<Value = usize>,
     cols: impl Strategy<Value = usize>,
 ) -> impl Strategy<Value = MockDenseMatrix<i64>> {
-    dense_matrix_strategy(rows, cols, proptest::num::i64::ANY)
+    dense_matrix_strategy(rows, cols, i64_range())
 }
 
 /// A strategy for "normal" f64 numbers (excluding infinities, NaN).
@@ -185,14 +194,18 @@ where
     T: Debug,
     S: Clone + Strategy<Value = T>,
 {
-    // Generate sparse matrices by generating hash maps whose keys (ij entries) are in bounds
+    // Generate sparse matrices by generating maps whose keys (ij entries) are in bounds
     // and values are picked from the supplied strategy
     (rows, cols).prop_flat_map(move |(r, c)| {
         let max_nnz = r * c;
         let ij_strategy = (0..r, 0..c);
         let values_strategy = strategy.clone();
-        proptest::collection::hash_map(ij_strategy, values_strategy, 0..=max_nnz)
-            .prop_map(|mut hash_matrix| hash_matrix.drain().map(|((i, j), v)| (i, j, v)).collect())
+        // Use BTreeMap to avoid potential randomness in hash map iteration order
+        proptest::collection::btree_map(ij_strategy, values_strategy, 0..=max_nnz)
+            .prop_map(|map_matrix| map_matrix
+                .into_iter()
+                .map(|((i, j), v)| (i, j, v))
+                .collect())
             .prop_map(move |triplets| MockSparseMatrix::from_triplets(r, c, triplets))
     })
 }
@@ -201,7 +214,7 @@ pub fn sparse_matrix_strategy_i64(
     rows: impl Strategy<Value = usize>,
     cols: impl Strategy<Value = usize>,
 ) -> impl Strategy<Value = MockSparseMatrix<i64>> {
-    sparse_matrix_strategy(rows, cols, proptest::num::i64::ANY)
+    sparse_matrix_strategy(rows, cols, i64_range())
 }
 
 pub fn sparse_matrix_strategy_normal_f64(
@@ -217,7 +230,7 @@ mod tests {
     use matrixcompare::assert_matrix_eq;
 
     #[test]
-    fn sparse_to_dense() {
+    fn sparse_dense() {
         let triplets = vec![(0, 0, 3), (1, 0, 2), (0, 3, 1), (0, 2, 2)];
         let matrix = MockSparseMatrix::from_triplets(2, 4, triplets)
             .to_dense()

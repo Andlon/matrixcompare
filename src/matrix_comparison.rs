@@ -125,11 +125,13 @@ fn find_out_of_bounds_indices<T>(
     cols: usize,
     triplets: &[(usize, usize, T)],
 ) -> Vec<(usize, usize)> {
-    triplets
+    let mut oob_triplets: Vec<_> = triplets
         .iter()
-        .filter(|&(i, j, _)| i > &rows || j > &cols)
+        .filter(|&(i, j, _)| i >= &rows || j >= &cols)
         .map(|&(i, j, _)| (i, j))
-        .collect()
+        .collect();
+    oob_triplets.sort();
+    oob_triplets
 }
 
 fn compare_dense_sparse<T, C>(
@@ -149,12 +151,19 @@ where
 
     let y_out_of_bounds = find_out_of_bounds_indices(y.rows(), y.cols(), &y_triplets);
     if !y_out_of_bounds.is_empty() {
-        Err(MatrixComparisonFailure::SparseIndicesOutOfBounds(
+        let oob = if swap_order {
+            OutOfBoundsIndices {
+                indices_x: y_out_of_bounds,
+                indices_y: Vec::new(),
+            }
+        } else {
             OutOfBoundsIndices {
                 indices_x: Vec::new(),
                 indices_y: y_out_of_bounds,
-            },
-        ))
+            }
+        };
+
+        Err(MatrixComparisonFailure::SparseIndicesOutOfBounds(oob))
     } else {
         let y_hash = try_build_hash_map_from_triplets(&y_triplets);
 

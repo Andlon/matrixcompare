@@ -288,6 +288,7 @@ proptest! {
 
         // TODO: Create issue in proptest repo for the fact that prop_assert_eq! moves objects,
         // whereas assert_eq! does not
+
         prop_assert_eq!(result1.clone(), result2.clone().map_err(|err| err.reverse()));
         prop_assert_eq!(result1.map_err(|err| err.reverse()), result2);
     }
