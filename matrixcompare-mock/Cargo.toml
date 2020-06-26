@@ -1,8 +1,10 @@
 [package]
 name = "matrixcompare-mock"
 version = "0.1.0"
-authors = ["Andreas Longva <andreas.b.longva@gmail.com>"]
+authors = ["Andreas Longva"]
 edition = "2018"
+license = "MIT"
+repository = "https://github.com/Andlon/matrixcompare"
 
 [dependencies]
 num = "0.2"
