@@ -20,7 +20,7 @@ where
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "({i}, {j}): x = {x}, y = {y}. ",
+            "({i}, {j}): x = {x}, y = {y}.",
             i = self.row,
             j = self.col,
             x = self.left,
@@ -40,11 +40,9 @@ impl Display for DimensionMismatch {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
             f,
-            "\n
-Dimensions of matrices X (left) and Y (right) do not match.
+r"Dimensions of matrices X (left) and Y (right) do not match.
  dim(X) = {x_rows} x {x_cols}
- dim(Y) = {y_rows} x {y_cols}
-\n",
+ dim(Y) = {y_rows} x {y_cols}",
             x_rows = self.dim_left.0,
             x_cols = self.dim_left.1,
             y_rows = self.dim_right.0,
@@ -114,15 +112,13 @@ where
 
         write!(
             f,
-            "\n
-Matrices X (left) and Y (right) have {num} mismatched element pairs.
+            "Matrices X (left) and Y (right) have {num} mismatched element pairs.
 The mismatched elements are listed below, in the format
 (row, col): x = X[[row, col]], y = Y[[row, col]].
 
 {mismatches}
 {overflow_msg}
-Comparison criterion: {description}
-\n",
+Comparison criterion: {description}",
             num = self.mismatches.len(),
             description = self.comparator_description,
             mismatches = formatted_mismatches,

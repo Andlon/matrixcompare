@@ -12,3 +12,4 @@ matrixcompare-core = { path = "matrixcompare-core", version="0.1"}
 quickcheck = "0.9"
 matrixcompare-mock = { path = "matrixcompare-mock", version="0.1" }
 proptest = "0.10"
+pretty_assertions = "0.6.1"

@@ -209,8 +209,7 @@ where
 
     fn description(&self) -> String {
         format!(
-            "
-Epsilon-sized absolute comparison, followed by an ULP-based comparison.
+            "Epsilon-sized absolute comparison, followed by an ULP-based comparison.
 Please see the documentation for details.
 Epsilon:       {eps}
 ULP tolerance: {ulp}",
