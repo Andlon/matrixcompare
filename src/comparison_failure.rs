@@ -5,8 +5,8 @@ const MAX_MISMATCH_REPORTS: usize = 12;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct MatrixElementComparisonFailure<T, E> {
-    pub x: T,
-    pub y: T,
+    pub left: T,
+    pub right: T,
     pub error: E,
     pub row: usize,
     pub col: usize,
@@ -15,8 +15,8 @@ pub struct MatrixElementComparisonFailure<T, E> {
 impl<T, E> MatrixElementComparisonFailure<T, E> {
     pub fn reverse(self) -> Self {
         Self {
-            x: self.y,
-            y: self.x,
+            left: self.right,
+            right: self.left,
             error: self.error,
             row: self.row,
             col: self.col,
@@ -35,8 +35,8 @@ where
             "({i}, {j}): x = {x}, y = {y}. ",
             i = self.row,
             j = self.col,
-            x = self.x,
-            y = self.y
+            x = self.left,
+            y = self.right
         )?;
         write!(f, "{}", self.error)
     }
@@ -44,15 +44,15 @@ where
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct DimensionMismatch {
-    pub dim_x: (usize, usize),
-    pub dim_y: (usize, usize),
+    pub dim_left: (usize, usize),
+    pub dim_right: (usize, usize),
 }
 
 impl DimensionMismatch {
     pub fn reverse(self) -> Self {
         Self {
-            dim_x: self.dim_y,
-            dim_y: self.dim_x,
+            dim_left: self.dim_right,
+            dim_right: self.dim_left,
         }
     }
 }
@@ -62,14 +62,14 @@ impl Display for DimensionMismatch {
         write!(
             f,
             "\n
-Dimensions of matrices X and Y do not match.
+Dimensions of matrices X (left) and Y (right) do not match.
  dim(X) = {x_rows} x {x_cols}
  dim(Y) = {y_rows} x {y_cols}
 \n",
-            x_rows = self.dim_x.0,
-            x_cols = self.dim_x.1,
-            y_rows = self.dim_y.0,
-            y_cols = self.dim_y.1
+            x_rows = self.dim_left.0,
+            x_cols = self.dim_left.1,
+            y_rows = self.dim_right.0,
+            y_cols = self.dim_right.1
         )
     }
 }
@@ -175,7 +175,7 @@ where
         write!(
             f,
             "\n
-Matrices X and Y have {num} mismatched element pairs.
+Matrices X (left) and Y (right) have {num} mismatched element pairs.
 The mismatched elements are listed below, in the format
 (row, col): x = X[[row, col]], y = Y[[row, col]].
 
@@ -207,7 +207,8 @@ where
 }
 
 impl<T, Error> MatrixComparisonFailure<T, Error> {
-    /// "Reverses" the result, in the sense that the roles of x and y are interchanged.
+    /// "Reverses" the result, in the sense that the roles of left and right are interchanged.
+    // TODO: Get rid of this method
     pub fn reverse(self) -> Self {
         use MatrixComparisonFailure::*;
         match self {

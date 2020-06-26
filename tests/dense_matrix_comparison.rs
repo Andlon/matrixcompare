@@ -24,7 +24,9 @@ quickcheck! {
         let ref x = MockDenseMatrix::from_row_major(m, n, vec![0; m * n]);
         let ref y = MockDenseMatrix::from_row_major(p, q, vec![0; p * q]);
 
-        let expected = MatrixComparisonFailure::MismatchedDimensions(DimensionMismatch { dim_x: (m, n), dim_y: (p, q) });
+        let expected = MatrixComparisonFailure::MismatchedDimensions(
+            DimensionMismatch { dim_left: (m, n), dim_right: (p, q) }
+        );
 
         TestResult::from_bool(compare_matrices(x, y, &comp) == Err(expected))
     }
@@ -56,8 +58,8 @@ fn compare_matrices_reports_correct_mismatches() {
         let expected = MismatchedElements(ElementsMismatch {
             comparator_description: description.clone(),
             mismatches: vec![MatrixElementComparisonFailure {
-                x: 1,
-                y: 2,
+                left: 1,
+                right: 2,
                 error: ExactError,
                 row: 0,
                 col: 0,
@@ -73,15 +75,15 @@ fn compare_matrices_reports_correct_mismatches() {
         let ref y = MockDenseMatrix::from_row_major(2, 3, vec![1, 1, 2, 3, 4, 6]);
         let mismatches = vec![
             MatrixElementComparisonFailure {
-                x: 0,
-                y: 1,
+                left: 0,
+                right: 1,
                 error: ExactError,
                 row: 0,
                 col: 0,
             },
             MatrixElementComparisonFailure {
-                x: 5,
-                y: 6,
+                left: 5,
+                right: 6,
                 error: ExactError,
                 row: 1,
                 col: 2,
@@ -106,15 +108,15 @@ fn compare_matrices_reports_correct_mismatches() {
                                   4, 6 ];
         let mismatches = vec![
             MatrixElementComparisonFailure {
-                x: 0,
-                y: 1,
+                left: 0,
+                right: 1,
                 error: ExactError,
                 row: 0,
                 col: 0,
             },
             MatrixElementComparisonFailure {
-                x: 5,
-                y: 6,
+                left: 5,
+                right: 6,
                 error: ExactError,
                 row: 2,
                 col: 1,
@@ -136,15 +138,15 @@ fn compare_matrices_reports_correct_mismatches() {
 
         let mismatches = vec![
             MatrixElementComparisonFailure {
-                x: 2,
-                y: 3,
+                left: 2,
+                right: 3,
                 error: ExactError,
                 row: 0,
                 col: 2,
             },
             MatrixElementComparisonFailure {
-                x: 5,
-                y: 6,
+                left: 5,
+                right: 6,
                 error: ExactError,
                 row: 1,
                 col: 1,

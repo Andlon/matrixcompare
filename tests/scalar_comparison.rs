@@ -13,8 +13,8 @@ fn scalar_comparison_reports_correct_mismatch() {
         let y = 0.3;
 
         let expected_err = ScalarComparisonFailure {
-            x: 0.2,
-            y: 0.3,
+            left: 0.2,
+            right: 0.3,
             error: ExactError,
             comparator_description: ElementwiseComparator::<f64>::description(&comp),
         };
