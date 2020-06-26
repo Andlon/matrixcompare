@@ -9,6 +9,6 @@ num = "0.2"
 matrixcompare-core = { path = "matrixcompare-core", version="0.1"}
 
 [dev-dependencies]
-quickcheck = "0.8.3"
+quickcheck = "0.9"
 matrixcompare-mock = { path = "matrixcompare-mock", version="0.1" }
-proptest = "0.9"
+proptest = "0.10"
