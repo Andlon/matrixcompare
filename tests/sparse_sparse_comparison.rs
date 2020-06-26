@@ -1,12 +1,13 @@
 use matrixcompare::comparators::ExactElementwiseComparator;
-use matrixcompare::{compare_matrices, MatrixComparisonFailure, Entry};
-use matrixcompare_mock::{sparse_matrix_strategy_i64, sparse_matrix_strategy_normal_f64,
-                         MockSparseMatrix};
+use matrixcompare::{compare_matrices, Entry, MatrixComparisonFailure};
+use matrixcompare_mock::{
+    sparse_matrix_strategy_i64, sparse_matrix_strategy_normal_f64, MockSparseMatrix,
+};
 use proptest::prelude::*;
 
 mod common;
-use common::MATRIX_DIM_RANGE;
 use common::reverse_result;
+use common::MATRIX_DIM_RANGE;
 
 #[test]
 fn sparse_sparse_out_of_bounds() {
@@ -22,7 +23,7 @@ fn sparse_sparse_out_of_bounds() {
                 match err {
                     SparseEntryOutOfBounds(Entry::Left(coord)) => assert!($oob1.contains(&coord)),
                     SparseEntryOutOfBounds(Entry::Right(coord)) => assert!($oob2.contains(&coord)),
-                    _ => panic!("Unexpected variant")
+                    _ => panic!("Unexpected variant"),
                 }
             }
 
@@ -34,7 +35,7 @@ fn sparse_sparse_out_of_bounds() {
                     // Left-right get flipped since we're swapping the comparison order
                     SparseEntryOutOfBounds(Entry::Right(coord)) => assert!($oob1.contains(&coord)),
                     SparseEntryOutOfBounds(Entry::Left(coord)) => assert!($oob2.contains(&coord)),
-                    _ => panic!("Unexpected variant")
+                    _ => panic!("Unexpected variant"),
                 }
             }
         };
@@ -92,10 +93,11 @@ fn sparse_sparse_duplicate_entries() {
     // Sparse2 has duplicate entries
     {
         let sparse1 = MockSparseMatrix::from_triplets(2, 3, vec![(0, 1, 3), (1, 0, 3), (0, 2, 1)]);
-        let sparse2 = MockSparseMatrix::from_triplets(2, 3, vec![(0, 1, -3),
-                                                                 (1, 0, 6),
-                                                                 (1, 0, 3),
-                                                                 (1, 2, 1)]);
+        let sparse2 = MockSparseMatrix::from_triplets(
+            2,
+            3,
+            vec![(0, 1, -3), (1, 0, 6), (1, 0, 3), (1, 2, 1)],
+        );
 
         // sparse1-sparse1
         {
@@ -103,7 +105,7 @@ fn sparse_sparse_duplicate_entries() {
             let err = result.unwrap_err();
             match err {
                 DuplicateSparseEntry(Entry::Right(coord)) => assert_eq!(coord, (1, 0)),
-                _ => panic!("Unexpected error")
+                _ => panic!("Unexpected error"),
             }
         }
 
@@ -113,7 +115,7 @@ fn sparse_sparse_duplicate_entries() {
             let err = result.unwrap_err();
             match err {
                 DuplicateSparseEntry(Entry::Left(coord)) => assert_eq!(coord, (1, 0)),
-                _ => panic!("Unexpected error")
+                _ => panic!("Unexpected error"),
             }
         }
     }
@@ -121,10 +123,11 @@ fn sparse_sparse_duplicate_entries() {
     // Both matrices have duplicate entries
     {
         let sparse1 = MockSparseMatrix::from_triplets(2, 3, vec![(0, 1, 3), (0, 1, 3), (0, 2, 1)]);
-        let sparse2 = MockSparseMatrix::from_triplets(2, 3, vec![(0, 1, -3),
-                                                                 (1, 0, 6),
-                                                                 (1, 0, 3),
-                                                                 (1, 2, 1)]);
+        let sparse2 = MockSparseMatrix::from_triplets(
+            2,
+            3,
+            vec![(0, 1, -3), (1, 0, 6), (1, 0, 3), (1, 2, 1)],
+        );
 
         // sparse1-sparse1
         {
@@ -133,7 +136,7 @@ fn sparse_sparse_duplicate_entries() {
             match err {
                 DuplicateSparseEntry(Entry::Left(coord)) => assert_eq!(coord, (0, 1)),
                 DuplicateSparseEntry(Entry::Right(coord)) => assert_eq!(coord, (1, 0)),
-                _ => panic!("Unexpected error")
+                _ => panic!("Unexpected error"),
             }
         }
 
@@ -145,7 +148,7 @@ fn sparse_sparse_duplicate_entries() {
                 // Left-right is flipped
                 DuplicateSparseEntry(Entry::Right(coord)) => assert_eq!(coord, (0, 1)),
                 DuplicateSparseEntry(Entry::Left(coord)) => assert_eq!(coord, (1, 0)),
-                _ => panic!("Unexpected error")
+                _ => panic!("Unexpected error"),
             }
         }
     }

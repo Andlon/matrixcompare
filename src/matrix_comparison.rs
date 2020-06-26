@@ -1,5 +1,8 @@
 use crate::comparators::ElementwiseComparator;
-use crate::{Access, DenseAccess, DimensionMismatch, ElementsMismatch, Matrix, MatrixComparisonFailure, MatrixElementComparisonFailure, SparseAccess, Coordinate};
+use crate::{
+    Access, Coordinate, DenseAccess, DimensionMismatch, ElementsMismatch, Matrix,
+    MatrixComparisonFailure, MatrixElementComparisonFailure, SparseAccess,
+};
 use num::Zero;
 use std::collections::{HashMap, HashSet};
 
@@ -7,7 +10,7 @@ use crate::Entry;
 
 enum HashMapBuildError {
     OutOfBoundsCoord(Coordinate),
-    DuplicateCoord(Coordinate)
+    DuplicateCoord(Coordinate),
 }
 
 fn try_build_sparse_hash_map<T>(
@@ -15,8 +18,8 @@ fn try_build_sparse_hash_map<T>(
     cols: usize,
     triplets: &[(usize, usize, T)],
 ) -> Result<HashMap<(usize, usize), T>, HashMapBuildError>
-    where
-        T: Clone,
+where
+    T: Clone,
 {
     let mut matrix = HashMap::new();
 
@@ -45,18 +48,22 @@ where
 
     let left_hash = try_build_sparse_hash_map(left.rows(), left.cols(), &left.fetch_triplets())
         .map_err(|build_error| match build_error {
-            HashMapBuildError::OutOfBoundsCoord(coord)
-                => MatrixComparisonFailure::SparseEntryOutOfBounds(Entry::Left(coord)),
-            HashMapBuildError::DuplicateCoord(coord)
-                => MatrixComparisonFailure::DuplicateSparseEntry(Entry::Left(coord))
+            HashMapBuildError::OutOfBoundsCoord(coord) => {
+                MatrixComparisonFailure::SparseEntryOutOfBounds(Entry::Left(coord))
+            }
+            HashMapBuildError::DuplicateCoord(coord) => {
+                MatrixComparisonFailure::DuplicateSparseEntry(Entry::Left(coord))
+            }
         })?;
 
     let right_hash = try_build_sparse_hash_map(right.rows(), right.cols(), &right.fetch_triplets())
         .map_err(|build_error| match build_error {
-            HashMapBuildError::OutOfBoundsCoord(coord)
-            => MatrixComparisonFailure::SparseEntryOutOfBounds(Entry::Right(coord)),
-            HashMapBuildError::DuplicateCoord(coord)
-            => MatrixComparisonFailure::DuplicateSparseEntry(Entry::Right(coord))
+            HashMapBuildError::OutOfBoundsCoord(coord) => {
+                MatrixComparisonFailure::SparseEntryOutOfBounds(Entry::Right(coord))
+            }
+            HashMapBuildError::DuplicateCoord(coord) => {
+                MatrixComparisonFailure::DuplicateSparseEntry(Entry::Right(coord))
+            }
         })?;
 
     let mut mismatches = Vec::new();
@@ -130,8 +137,8 @@ where
         None
     } else {
         Some(ElementsMismatch {
-                comparator_description: comparator.description(),
-                mismatches,
+            comparator_description: comparator.description(),
+            mismatches,
         })
     }
 }
@@ -161,20 +168,24 @@ where
             } else {
                 Ok(())
             }
-        },
+        }
         Err(build_error) => {
-            let make_entry = |coord| if swap_order {
-                Entry::Left(coord)
-            } else {
-                Entry::Right(coord)
+            let make_entry = |coord| {
+                if swap_order {
+                    Entry::Left(coord)
+                } else {
+                    Entry::Right(coord)
+                }
             };
 
             use MatrixComparisonFailure::*;
             match build_error {
-                HashMapBuildError::OutOfBoundsCoord(coord)
-                    => Err(SparseEntryOutOfBounds(make_entry(coord))),
-                HashMapBuildError::DuplicateCoord(coord)
-                    => Err(DuplicateSparseEntry(make_entry(coord)))
+                HashMapBuildError::OutOfBoundsCoord(coord) => {
+                    Err(SparseEntryOutOfBounds(make_entry(coord)))
+                }
+                HashMapBuildError::DuplicateCoord(coord) => {
+                    Err(DuplicateSparseEntry(make_entry(coord)))
+                }
             }
         }
     }

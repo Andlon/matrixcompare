@@ -1,8 +1,8 @@
-use matrixcompare::compare_matrices;
 use matrixcompare::comparators::ExactElementwiseComparator;
+use matrixcompare::compare_matrices;
 use matrixcompare_mock::{mock_matrix, MockSparseMatrix};
 
-use pretty_assertions::{assert_eq};
+use pretty_assertions::assert_eq;
 
 #[test]
 fn mismatched_elements() {
@@ -13,8 +13,9 @@ fn mismatched_elements() {
     let err_string = err.to_string();
 
     println!("{}", err);
-    assert_eq!(err_string,
-r"Matrices X (left) and Y (right) have 3 mismatched element pairs.
+    assert_eq!(
+        err_string,
+        r"Matrices X (left) and Y (right) have 3 mismatched element pairs.
 The mismatched elements are listed below, in the format
 (row, col): x = X[[row, col]], y = Y[[row, col]].
 
@@ -22,7 +23,8 @@ The mismatched elements are listed below, in the format
  (1, 0): x = 4, y = 5.
  (1, 1): x = 5, y = 4.
 
-Comparison criterion: exact equality x == y.");
+Comparison criterion: exact equality x == y."
+    );
 }
 
 #[test]
@@ -34,10 +36,12 @@ fn mismatched_dimensions() {
     let err_string = err.to_string();
 
     println!("{}", err);
-    assert_eq!(err_string,
-r"Dimensions of matrices X (left) and Y (right) do not match.
+    assert_eq!(
+        err_string,
+        r"Dimensions of matrices X (left) and Y (right) do not match.
  dim(X) = 2 x 2
- dim(Y) = 2 x 3");
+ dim(Y) = 2 x 3"
+    );
 }
 
 #[test]
@@ -49,7 +53,10 @@ fn duplicate_entry_left() {
     let err_string = err.to_string();
 
     println!("{}", err);
-    assert_eq!(err_string, r"At least one duplicate sparse entry detected. Example: Left(1, 0).");
+    assert_eq!(
+        err_string,
+        r"At least one duplicate sparse entry detected. Example: Left(1, 0)."
+    );
 }
 
 #[test]
@@ -61,7 +68,10 @@ fn duplicate_entry_right() {
     let err_string = err.to_string();
 
     println!("{}", err);
-    assert_eq!(err_string, r"At least one duplicate sparse entry detected. Example: Right(1, 0).");
+    assert_eq!(
+        err_string,
+        r"At least one duplicate sparse entry detected. Example: Right(1, 0)."
+    );
 }
 
 #[test]
@@ -73,7 +83,10 @@ fn out_of_bounds_left() {
     let err_string = err.to_string();
 
     println!("{}", err);
-    assert_eq!(err_string, r"At least one sparse entry is out of bounds. Example: Left(5, 0).");
+    assert_eq!(
+        err_string,
+        r"At least one sparse entry is out of bounds. Example: Left(5, 0)."
+    );
 }
 
 #[test]
@@ -85,5 +98,8 @@ fn out_of_bounds_right() {
     let err_string = err.to_string();
 
     println!("{}", err);
-    assert_eq!(err_string, r"At least one sparse entry is out of bounds. Example: Right(5, 0).");
+    assert_eq!(
+        err_string,
+        r"At least one sparse entry is out of bounds. Example: Right(5, 0)."
+    );
 }

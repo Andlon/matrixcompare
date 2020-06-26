@@ -7,7 +7,7 @@ use quickcheck::{quickcheck, TestResult};
 use proptest::prelude::*;
 
 mod common;
-use common::{MATRIX_DIM_RANGE, reverse_result};
+use common::{reverse_result, MATRIX_DIM_RANGE};
 
 quickcheck! {
     fn property_elementwise_comparison_incompatible_matrices_yield_dimension_mismatch(

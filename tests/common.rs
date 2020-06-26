@@ -1,14 +1,17 @@
+use matrixcompare::{
+    DimensionMismatch, ElementsMismatch, Entry, MatrixComparisonFailure,
+    MatrixElementComparisonFailure,
+};
 use std::ops::Range;
-use matrixcompare::{MatrixComparisonFailure, DimensionMismatch, ElementsMismatch, MatrixElementComparisonFailure, Entry};
 
 pub const MATRIX_DIM_RANGE: Range<usize> = 0..5;
 
 /// Reverses a comparison result.
 ///
 /// See docs for `reverse_failure`.
-pub fn reverse_result<T, E>(result: Result<(), MatrixComparisonFailure<T, E>>)
-    -> Result<(), MatrixComparisonFailure<T, E>>
-{
+pub fn reverse_result<T, E>(
+    result: Result<(), MatrixComparisonFailure<T, E>>,
+) -> Result<(), MatrixComparisonFailure<T, E>> {
     result.map_err(|err| reverse_failure(err))
 }
 
@@ -16,9 +19,9 @@ pub fn reverse_result<T, E>(result: Result<(), MatrixComparisonFailure<T, E>>)
 ///
 /// Only used for testing that comparison is symmetric.
 /// It is implicitly assumed that the error metric is symmetric.
-pub fn reverse_failure<T, E>(failure: MatrixComparisonFailure<T, E>)
-    -> MatrixComparisonFailure<T, E>
-{
+pub fn reverse_failure<T, E>(
+    failure: MatrixComparisonFailure<T, E>,
+) -> MatrixComparisonFailure<T, E> {
     use MatrixComparisonFailure::*;
     match failure {
         MismatchedDimensions(dim) => MismatchedDimensions(reverse_dimension_mismatch(dim)),
@@ -47,7 +50,7 @@ fn reverse_elements_mismatch<T, E>(mismatch: ElementsMismatch<T, E>) -> Elements
 }
 
 fn reverse_matrix_element_comparison_failure<T, E>(
-    failure: MatrixElementComparisonFailure<T, E>
+    failure: MatrixElementComparisonFailure<T, E>,
 ) -> MatrixElementComparisonFailure<T, E> {
     MatrixElementComparisonFailure {
         left: failure.right,
@@ -61,6 +64,6 @@ fn reverse_matrix_element_comparison_failure<T, E>(
 fn reverse_entry(entry: Entry) -> Entry {
     match entry {
         Entry::Left(coord) => Entry::Right(coord),
-        Entry::Right(coord) => Entry::Left(coord)
+        Entry::Right(coord) => Entry::Left(coord),
     }
 }

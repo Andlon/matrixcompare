@@ -1,5 +1,5 @@
 use matrixcompare::comparators::ExactElementwiseComparator;
-use matrixcompare::{compare_matrices, MatrixComparisonFailure, Entry};
+use matrixcompare::{compare_matrices, Entry, MatrixComparisonFailure};
 use matrixcompare_core::Matrix;
 use matrixcompare_mock::{
     dense_matrix_strategy_i64, dense_matrix_strategy_normal_f64, i64_range, mock_matrix,
@@ -9,7 +9,7 @@ use matrixcompare_mock::{
 use proptest::prelude::*;
 
 mod common;
-use common::{MATRIX_DIM_RANGE, reverse_result};
+use common::{reverse_result, MATRIX_DIM_RANGE};
 
 #[test]
 fn dense_sparse_index_out_of_bounds() {
@@ -23,7 +23,7 @@ fn dense_sparse_index_out_of_bounds() {
                 let err = result.unwrap_err();
                 match err {
                     SparseEntryOutOfBounds(Entry::Right(coord)) => assert!($oob.contains(&coord)),
-                    _ => panic!("Unexpected variant")
+                    _ => panic!("Unexpected variant"),
                 }
             }
 
@@ -33,7 +33,7 @@ fn dense_sparse_index_out_of_bounds() {
                 let err = result.unwrap_err();
                 match err {
                     SparseEntryOutOfBounds(Entry::Left(coord)) => assert!($oob.contains(&coord)),
-                    _ => panic!("Unexpected variant")
+                    _ => panic!("Unexpected variant"),
                 }
             }
         };
@@ -78,10 +78,8 @@ fn dense_sparse_duplicate_entries() {
 
     let dense = mock_matrix![1, 2, 3;
                              4, 5, 6];
-    let sparse = MockSparseMatrix::from_triplets(2, 3, vec![(0, 1, -3),
-                                                            (1, 0, 6),
-                                                            (1, 0, 3),
-                                                            (1, 2, 1)]);
+    let sparse =
+        MockSparseMatrix::from_triplets(2, 3, vec![(0, 1, -3), (1, 0, 6), (1, 0, 3), (1, 2, 1)]);
 
     // Dense-sparse
     {
@@ -89,7 +87,7 @@ fn dense_sparse_duplicate_entries() {
         let err = result.unwrap_err();
         match err {
             DuplicateSparseEntry(Entry::Right(coord)) => assert_eq!(coord, (1, 0)),
-            _ => panic!("Unexpected error")
+            _ => panic!("Unexpected error"),
         }
     }
 
@@ -99,7 +97,7 @@ fn dense_sparse_duplicate_entries() {
         let err = result.unwrap_err();
         match err {
             DuplicateSparseEntry(Entry::Left(coord)) => assert_eq!(coord, (1, 0)),
-            _ => panic!("Unexpected error")
+            _ => panic!("Unexpected error"),
         }
     }
 }

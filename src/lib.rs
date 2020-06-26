@@ -80,8 +80,8 @@ pub use self::matrix_comparison::compare_matrices;
 pub use self::scalar_comparison::{compare_scalars, ScalarComparisonFailure};
 
 pub use self::comparison_failure::{
-    DimensionMismatch, ElementsMismatch, MatrixComparisonFailure,
-    MatrixElementComparisonFailure, Entry, Coordinate
+    Coordinate, DimensionMismatch, ElementsMismatch, Entry, MatrixComparisonFailure,
+    MatrixElementComparisonFailure,
 };
 
 pub use matrixcompare_core::*;

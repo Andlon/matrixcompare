@@ -40,7 +40,7 @@ impl Display for DimensionMismatch {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
             f,
-r"Dimensions of matrices X (left) and Y (right) do not match.
+            r"Dimensions of matrices X (left) and Y (right) do not match.
  dim(X) = {x_rows} x {x_cols}
  dim(Y) = {y_rows} x {y_cols}",
             x_rows = self.dim_left.0,
@@ -58,18 +58,14 @@ pub type Coordinate = (usize, usize);
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Entry {
     Left(Coordinate),
-    Right(Coordinate)
+    Right(Coordinate),
 }
 
 impl Display for Entry {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Left((i, j)) => {
-                write!(f, "Left({}, {})", i, j)
-            },
-            Self::Right((i, j)) => {
-                write!(f, "Right({}, {})", i, j)
-            }
+            Self::Left((i, j)) => write!(f, "Left({}, {})", i, j),
+            Self::Right((i, j)) => write!(f, "Right({}, {})", i, j),
         }
     }
 }
@@ -152,12 +148,16 @@ where
         match self {
             &MatrixComparisonFailure::MismatchedElements(ref mismatch) => mismatch.fmt(f),
             &MatrixComparisonFailure::MismatchedDimensions(ref mismatch) => mismatch.fmt(f),
-            &MatrixComparisonFailure::SparseEntryOutOfBounds(entry) => {
-                write!(f, r"At least one sparse entry is out of bounds. Example: {}.", entry)
-            }
-            &MatrixComparisonFailure::DuplicateSparseEntry(entry) => {
-                write!(f, r"At least one duplicate sparse entry detected. Example: {}.", entry)
-            }
+            &MatrixComparisonFailure::SparseEntryOutOfBounds(entry) => write!(
+                f,
+                r"At least one sparse entry is out of bounds. Example: {}.",
+                entry
+            ),
+            &MatrixComparisonFailure::DuplicateSparseEntry(entry) => write!(
+                f,
+                r"At least one duplicate sparse entry detected. Example: {}.",
+                entry
+            ),
         }
     }
 }
