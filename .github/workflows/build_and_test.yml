@@ -22,7 +22,7 @@ jobs:
     - name: Update Rust
       run: rustup update
 
-    - name: Run tests (--features "dss")
+    - name: Run tests
       run: cargo test --all-targets
 
   windows:
