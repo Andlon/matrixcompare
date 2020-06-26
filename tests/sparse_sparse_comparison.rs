@@ -1,10 +1,90 @@
 use matrixcompare::comparators::ExactElementwiseComparator;
-use matrixcompare::compare_matrices;
-use matrixcompare_mock::{sparse_matrix_strategy_i64, sparse_matrix_strategy_normal_f64, MockSparseMatrix};
+use matrixcompare::{compare_matrices, MatrixComparisonFailure, Entry};
+use matrixcompare_mock::{sparse_matrix_strategy_i64, sparse_matrix_strategy_normal_f64,
+                         MockSparseMatrix};
 use proptest::prelude::*;
 
 mod common;
 use common::MATRIX_DIM_RANGE;
+
+#[test]
+fn sparse_sparse_out_of_bounds() {
+    use MatrixComparisonFailure::SparseEntryOutOfBounds;
+
+    macro_rules! assert_out_of_bounds_detected {
+        // oob1 and oob2 contain the out of bounds coordinates for sparse1 and sparse 2
+        ($sparse1:expr, $sparse2:expr, $oob1:expr, $oob2:expr) => {
+            // sparse1-sparse2
+            {
+                let result = compare_matrices(&$sparse1, &$sparse2, &ExactElementwiseComparator);
+                let err = result.unwrap_err();
+                dbg!(&err);
+                match err {
+                    SparseEntryOutOfBounds(Entry::Left(coord)) => assert!($oob1.contains(&coord)),
+                    SparseEntryOutOfBounds(Entry::Right(coord)) => assert!($oob2.contains(&coord)),
+                    _ => panic!("Unexpected variant")
+                }
+            }
+
+            // sparse2-sparse1
+            {
+                let result = compare_matrices(&$sparse2, &$sparse1, &ExactElementwiseComparator);
+                let err = result.unwrap_err();
+                dbg!(&err);
+                match err {
+                    // Left-right get flipped since we're swapping the comparison order
+                    SparseEntryOutOfBounds(Entry::Right(coord)) => assert!($oob1.contains(&coord)),
+                    SparseEntryOutOfBounds(Entry::Left(coord)) => assert!($oob2.contains(&coord)),
+                    _ => panic!("Unexpected variant")
+                }
+            }
+        };
+    }
+
+    // Row out of bounds in sparse2
+    {
+        let sparse1 = MockSparseMatrix::from_triplets(2, 3, vec![(0, 0, 2)]);
+        let sparse2 = MockSparseMatrix::from_triplets(2, 3, vec![(0, 1, -3), (1, 2, 6), (2, 0, 1)]);
+        let oob1 = vec![];
+        let oob2 = vec![(2, 0)];
+        assert_out_of_bounds_detected!(sparse1, sparse2, oob1, oob2);
+    }
+
+    // Col out of bounds in sparse2
+    {
+        let sparse1 = MockSparseMatrix::from_triplets(2, 3, vec![(0, 0, 2)]);
+        let sparse2 = MockSparseMatrix::from_triplets(2, 3, vec![(0, 1, -3), (1, 3, 1), (1, 2, 6)]);
+        let oob1 = vec![];
+        let oob2 = vec![(1, 3)];
+        assert_out_of_bounds_detected!(sparse1, sparse2, oob1, oob2);
+    }
+
+    // Row and col out of bounds in sparse2
+    {
+        let sparse1 = MockSparseMatrix::from_triplets(2, 3, vec![(0, 0, 2)]);
+        let sparse2 = MockSparseMatrix::from_triplets(
+            2,
+            3,
+            vec![(2, 3, 1), (0, 1, -3), (2, 0, 1), (1, 2, 6)],
+        );
+        let oob1 = vec![];
+        let oob2 = vec![(2, 0), (2, 3)];
+        assert_out_of_bounds_detected!(sparse1, sparse2, oob1, oob2);
+    }
+
+    // Row and col out of bounds in both sparse1 and sparse2
+    {
+        let sparse1 = MockSparseMatrix::from_triplets(2, 3, vec![(0, 0, 2), (4, 6, 3)]);
+        let sparse2 = MockSparseMatrix::from_triplets(
+            2,
+            3,
+            vec![(2, 3, 1), (0, 1, -3), (2, 0, 1), (1, 2, 6)],
+        );
+        let oob1 = vec![(4, 6)];
+        let oob2 = vec![(2, 0), (2, 3), (4, 6)];
+        assert_out_of_bounds_detected!(sparse1, sparse2, oob1, oob2);
+    }
+}
 
 /// A strategy producing pairs of dense and sparse matrices with the same dimensions.
 fn same_size_sparse_sparse_matrices(
