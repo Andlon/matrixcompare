@@ -25,6 +25,7 @@ where
     }
 }
 
+/// Comparison of two scalars.
 pub fn compare_scalars<T, C>(
     left: &T,
     right: &T,

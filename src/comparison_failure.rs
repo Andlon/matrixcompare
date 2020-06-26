@@ -53,8 +53,10 @@ Dimensions of matrices X (left) and Y (right) do not match.
     }
 }
 
+/// A pair of (row, column) coordinates in a matrix.
 pub type Coordinate = (usize, usize);
 
+/// A coordinate in the left or right matrix being compared.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Entry {
     Left(Coordinate),
@@ -73,25 +75,6 @@ impl Display for Entry {
         }
     }
 }
-
-// TODO: Remove impl
-// impl Display for OutOfBoundsIndices {
-//     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-//         if !self.indices_x.is_empty() {
-//             writeln!(f, "Out of bounds indices in X:")?;
-//             for (i, j) in &self.indices_x {
-//                 writeln!(f, "    ({}, {}", i, j)?;
-//             }
-//         }
-//         if !self.indices_y.is_empty() {
-//             writeln!(f, "Out of bounds indices in Y:")?;
-//             for (i, j) in &self.indices_y {
-//                 writeln!(f, "    ({}, {}", i, j)?;
-//             }
-//         }
-//         Ok(())
-//     }
-// }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ElementsMismatch<T, Error> {
@@ -148,6 +131,7 @@ Comparison criterion: {description}
     }
 }
 
+/// The error type associated with matrix comparison.
 #[derive(Debug, Clone, PartialEq)]
 pub enum MatrixComparisonFailure<T, Error> {
     MismatchedDimensions(DimensionMismatch),

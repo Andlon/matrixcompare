@@ -221,6 +221,10 @@ where
     }
 }
 
+/// Comparison of two matrices.
+///
+/// Most users will only need to use the comparison macro. This function is mainly of use to
+/// users who want to build their own macros.
 pub fn compare_matrices<T, C>(
     left: impl Matrix<T>,
     right: impl Matrix<T>,

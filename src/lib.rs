@@ -56,11 +56,8 @@ in question implement the traits found in `matrixcompare-core`.
 
 The design of `matrixcompare` heavily favors ease of use/integration, correctness and
 flexibility over performance. It is intended to be used for automated tests, and as such does
-not belong in performance sensitive code. The only guarantees made about performance is that the
-asymptotic complexity of comparing two matrices `A` and `B` is given by `O(k log k)`, where
-`k = max(nnz(A), nnz(B))`, with `nnz(A)` denoting the number of non-zero elements in `A`. Note that
-for a dense matrix `A` of dimensions `m x n`, `nnz(A) = m * n`.
-
+not belong in performance sensitive code. There are no particular guarantees about performance,
+other than that the asymptotic complexity is roughly the same as a more optimized implementation.
 */
 
 #[macro_use]
