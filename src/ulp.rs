@@ -40,6 +40,7 @@ pub trait Ulp {
 macro_rules! impl_float_ulp {
     ($ftype:ty, $itype:ty) => {
         impl Ulp for $ftype {
+            #[allow(clippy::transmute_float_to_int)]
             fn ulp_diff(a: &Self, b: &Self) -> UlpComparisonResult {
                 if a == b {
                     UlpComparisonResult::ExactMatch

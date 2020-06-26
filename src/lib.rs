@@ -13,13 +13,11 @@ Consider the following contrived example.
 
 ```rust,should_panic
 # use matrixcompare::assert_matrix_eq; use matrixcompare_mock::mock_matrix;
-fn main() {
-    let a = mock_matrix![1.00, 2.00;
-                         3.00, 4.00];
-    let b = mock_matrix![1.01, 2.00;
-                         3.40, 4.00];
-    assert_matrix_eq!(a, b, comp = abs, tol = 1e-8);
-}
+let a = mock_matrix![1.00, 2.00;
+                     3.00, 4.00];
+let b = mock_matrix![1.01, 2.00;
+                     3.40, 4.00];
+assert_matrix_eq!(a, b, comp = abs, tol = 1e-8);
 ```
 
 The above example panics with the following error message
@@ -59,6 +57,8 @@ flexibility over performance. It is intended to be used for automated tests, and
 not belong in performance sensitive code. There are no particular guarantees about performance,
 other than that the asymptotic complexity is roughly the same as a more optimized implementation.
 */
+
+#![allow(clippy::float_cmp)]
 
 #[macro_use]
 mod matrix_comparison;

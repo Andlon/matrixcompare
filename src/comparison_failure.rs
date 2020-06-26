@@ -146,14 +146,14 @@ where
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
-            &MatrixComparisonFailure::MismatchedElements(ref mismatch) => mismatch.fmt(f),
-            &MatrixComparisonFailure::MismatchedDimensions(ref mismatch) => mismatch.fmt(f),
-            &MatrixComparisonFailure::SparseEntryOutOfBounds(entry) => write!(
+            MatrixComparisonFailure::MismatchedElements(ref mismatch) => mismatch.fmt(f),
+            MatrixComparisonFailure::MismatchedDimensions(ref mismatch) => mismatch.fmt(f),
+            MatrixComparisonFailure::SparseEntryOutOfBounds(entry) => write!(
                 f,
                 r"At least one sparse entry is out of bounds. Example: {}.",
                 entry
             ),
-            &MatrixComparisonFailure::DuplicateSparseEntry(entry) => write!(
+            MatrixComparisonFailure::DuplicateSparseEntry(entry) => write!(
                 f,
                 r"At least one duplicate sparse entry detected. Example: {}.",
                 entry

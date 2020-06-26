@@ -26,7 +26,7 @@ where
     for (i, j, v) in triplets.iter().cloned() {
         if i >= rows || j >= cols {
             return Err(HashMapBuildError::OutOfBoundsCoord((i, j)));
-        } else if let Some(_) = matrix.insert((i, j), v) {
+        } else if matrix.insert((i, j), v).is_some() {
             return Err(HashMapBuildError::DuplicateCoord((i, j)));
         }
     }
@@ -248,7 +248,7 @@ where
     let shapes_match = left.rows() == right.rows() && left.cols() == right.cols();
     if shapes_match {
         use Access::{Dense, Sparse};
-        let result = match (left.access(), right.access()) {
+        match (left.access(), right.access()) {
             (Dense(left_access), Dense(right_access)) => {
                 compare_dense_dense(left_access, right_access, comparator)
             }
@@ -263,8 +263,7 @@ where
             (Sparse(left_access), Sparse(right_access)) => {
                 compare_sparse_sparse(left_access, right_access, comparator)
             }
-        };
-        result
+        }
     } else {
         Err(MatrixComparisonFailure::MismatchedDimensions(
             DimensionMismatch {

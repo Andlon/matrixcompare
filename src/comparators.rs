@@ -104,7 +104,7 @@ where
     }
 
     fn description(&self) -> String {
-        format!("exact equality x == y.")
+        "exact equality x == y.".to_string()
     }
 }
 
@@ -198,7 +198,7 @@ where
 
     fn compare(&self, a: &T, b: &T) -> Result<(), UlpError> {
         // First perform an absolute comparison with a presumably very small epsilon tolerance
-        if let Err(_) = self.abs.compare(a, b) {
+        if self.abs.compare(a, b).is_err() {
             // Then fall back to an ULP-based comparison
             self.ulp.compare(a, b)
         } else {
