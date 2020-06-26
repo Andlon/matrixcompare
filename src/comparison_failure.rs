@@ -12,18 +12,6 @@ pub struct MatrixElementComparisonFailure<T, E> {
     pub col: usize,
 }
 
-impl<T, E> MatrixElementComparisonFailure<T, E> {
-    pub fn reverse(self) -> Self {
-        Self {
-            left: self.right,
-            right: self.left,
-            error: self.error,
-            row: self.row,
-            col: self.col,
-        }
-    }
-}
-
 impl<T, E> Display for MatrixElementComparisonFailure<T, E>
 where
     T: Display,
@@ -46,15 +34,6 @@ where
 pub struct DimensionMismatch {
     pub dim_left: (usize, usize),
     pub dim_right: (usize, usize),
-}
-
-impl DimensionMismatch {
-    pub fn reverse(self) -> Self {
-        Self {
-            dim_left: self.dim_right,
-            dim_right: self.dim_left,
-        }
-    }
 }
 
 impl Display for DimensionMismatch {
@@ -95,15 +74,6 @@ impl Display for Entry {
     }
 }
 
-impl Entry {
-    pub fn reverse(&self) -> Self {
-        match self {
-            Self::Left(coord) => Self::Right(*coord),
-            Self::Right(coord) => Self::Left(*coord)
-        }
-    }
-}
-
 // TODO: Remove impl
 // impl Display for OutOfBoundsIndices {
 //     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
@@ -127,19 +97,6 @@ impl Entry {
 pub struct ElementsMismatch<T, Error> {
     pub comparator_description: String,
     pub mismatches: Vec<MatrixElementComparisonFailure<T, Error>>,
-}
-
-impl<T, Error> ElementsMismatch<T, Error> {
-    pub fn reverse(self) -> Self {
-        Self {
-            comparator_description: self.comparator_description,
-            mismatches: self
-                .mismatches
-                .into_iter()
-                .map(MatrixElementComparisonFailure::reverse)
-                .collect(),
-        }
-    }
 }
 
 impl<T, Error> Display for ElementsMismatch<T, Error>
@@ -204,20 +161,6 @@ where
     T: fmt::Debug + Display,
     E: fmt::Debug + Display,
 {
-}
-
-impl<T, Error> MatrixComparisonFailure<T, Error> {
-    /// "Reverses" the result, in the sense that the roles of left and right are interchanged.
-    // TODO: Get rid of this method
-    pub fn reverse(self) -> Self {
-        use MatrixComparisonFailure::*;
-        match self {
-            MismatchedDimensions(dim) => MismatchedDimensions(dim.reverse()),
-            MismatchedElements(elements) => MismatchedElements(elements.reverse()),
-            SparseEntryOutOfBounds(out_of_bounds) => SparseEntryOutOfBounds(out_of_bounds.reverse()),
-            DuplicateSparseEntry(entry) => SparseEntryOutOfBounds(entry.reverse()),
-        }
-    }
 }
 
 impl<T, Error> Display for MatrixComparisonFailure<T, Error>

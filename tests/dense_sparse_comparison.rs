@@ -9,7 +9,7 @@ use matrixcompare_mock::{
 use proptest::prelude::*;
 
 mod common;
-use common::MATRIX_DIM_RANGE;
+use common::{MATRIX_DIM_RANGE, reverse_result};
 
 #[test]
 fn dense_sparse_index_out_of_bounds() {
@@ -279,8 +279,8 @@ proptest! {
         let result1 = compare_matrices(&dense, &sparse, &c);
         let result2 = compare_matrices(&sparse, &dense, &c);
 
-        prop_assert_eq!(result1.clone(), result2.clone().map_err(|err| err.reverse()));
-        prop_assert_eq!(result1.map_err(|err| err.reverse()), result2);
+        prop_assert_eq!(result1.clone(), reverse_result(result2.clone()));
+        prop_assert_eq!(reverse_result(result1), result2);
     }
 
     #[test]
@@ -291,7 +291,7 @@ proptest! {
         let result1 = compare_matrices(&dense, &sparse, &c);
         let result2 = compare_matrices(&sparse, &dense, &c);
 
-        prop_assert_eq!(result1.clone(), result2.clone().map_err(|err| err.reverse()));
-        prop_assert_eq!(result1.map_err(|err| err.reverse()), result2);
+        prop_assert_eq!(result1.clone(), reverse_result(result2.clone()));
+        prop_assert_eq!(reverse_result(result1), result2);
     }
 }
