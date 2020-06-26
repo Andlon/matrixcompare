@@ -18,7 +18,6 @@ fn sparse_sparse_out_of_bounds() {
             {
                 let result = compare_matrices(&$sparse1, &$sparse2, &ExactElementwiseComparator);
                 let err = result.unwrap_err();
-                dbg!(&err);
                 match err {
                     SparseEntryOutOfBounds(Entry::Left(coord)) => assert!($oob1.contains(&coord)),
                     SparseEntryOutOfBounds(Entry::Right(coord)) => assert!($oob2.contains(&coord)),
@@ -30,7 +29,6 @@ fn sparse_sparse_out_of_bounds() {
             {
                 let result = compare_matrices(&$sparse2, &$sparse1, &ExactElementwiseComparator);
                 let err = result.unwrap_err();
-                dbg!(&err);
                 match err {
                     // Left-right get flipped since we're swapping the comparison order
                     SparseEntryOutOfBounds(Entry::Right(coord)) => assert!($oob1.contains(&coord)),
@@ -83,6 +81,72 @@ fn sparse_sparse_out_of_bounds() {
         let oob1 = vec![(4, 6)];
         let oob2 = vec![(2, 0), (2, 3), (4, 6)];
         assert_out_of_bounds_detected!(sparse1, sparse2, oob1, oob2);
+    }
+}
+
+#[test]
+fn sparse_sparse_duplicate_entries() {
+    use MatrixComparisonFailure::DuplicateSparseEntry;
+
+    // Sparse2 has duplicate entries
+    {
+        let sparse1 = MockSparseMatrix::from_triplets(2, 3, vec![(0, 1, 3), (1, 0, 3), (0, 2, 1)]);
+        let sparse2 = MockSparseMatrix::from_triplets(2, 3, vec![(0, 1, -3),
+                                                                 (1, 0, 6),
+                                                                 (1, 0, 3),
+                                                                 (1, 2, 1)]);
+
+        // sparse1-sparse1
+        {
+            let result = compare_matrices(&sparse1, &sparse2, &ExactElementwiseComparator);
+            let err = result.unwrap_err();
+            match err {
+                DuplicateSparseEntry(Entry::Right(coord)) => assert_eq!(coord, (1, 0)),
+                _ => panic!("Unexpected error")
+            }
+        }
+
+        // sparse2-sparse1
+        {
+            let result = compare_matrices(&sparse2, &sparse1, &ExactElementwiseComparator);
+            let err = result.unwrap_err();
+            match err {
+                DuplicateSparseEntry(Entry::Left(coord)) => assert_eq!(coord, (1, 0)),
+                _ => panic!("Unexpected error")
+            }
+        }
+    }
+
+    // Both matrices have duplicate entries
+    {
+        let sparse1 = MockSparseMatrix::from_triplets(2, 3, vec![(0, 1, 3), (0, 1, 3), (0, 2, 1)]);
+        let sparse2 = MockSparseMatrix::from_triplets(2, 3, vec![(0, 1, -3),
+                                                                 (1, 0, 6),
+                                                                 (1, 0, 3),
+                                                                 (1, 2, 1)]);
+
+        // sparse1-sparse1
+        {
+            let result = compare_matrices(&sparse1, &sparse2, &ExactElementwiseComparator);
+            let err = result.unwrap_err();
+            match err {
+                DuplicateSparseEntry(Entry::Left(coord)) => assert_eq!(coord, (0, 1)),
+                DuplicateSparseEntry(Entry::Right(coord)) => assert_eq!(coord, (1, 0)),
+                _ => panic!("Unexpected error")
+            }
+        }
+
+        // sparse2-sparse1
+        {
+            let result = compare_matrices(&sparse2, &sparse1, &ExactElementwiseComparator);
+            let err = result.unwrap_err();
+            match err {
+                // Left-right is flipped
+                DuplicateSparseEntry(Entry::Right(coord)) => assert_eq!(coord, (0, 1)),
+                DuplicateSparseEntry(Entry::Left(coord)) => assert_eq!(coord, (1, 0)),
+                _ => panic!("Unexpected error")
+            }
+        }
     }
 }
 

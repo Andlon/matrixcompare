@@ -91,11 +91,6 @@ fn dense_sparse_duplicate_entries() {
             DuplicateSparseEntry(Entry::Right(coord)) => assert_eq!(coord, (1, 0)),
             _ => panic!("Unexpected error")
         }
-
-        // assert_eq!(result, Err(DuplicateSparseEntries(DuplicateEntries {
-        //     x_duplicates: HashMap::default(),
-        //     y_duplicates: HashMap::from_iter(vec![((1, 0), vec![6, 3])])
-        // })));
     }
 
     // Sparse-dense
