@@ -1,5 +1,5 @@
 use matrixcompare::comparators::ExactElementwiseComparator;
-use matrixcompare::{compare_matrices, MatrixComparisonFailure, OutOfBoundsIndices, DuplicateEntries};
+use matrixcompare::{compare_matrices, MatrixComparisonFailure, Entry};
 use matrixcompare_core::Matrix;
 use matrixcompare_mock::{
     dense_matrix_strategy_i64, dense_matrix_strategy_normal_f64, i64_range, mock_matrix,
@@ -10,33 +10,31 @@ use proptest::prelude::*;
 
 mod common;
 use common::MATRIX_DIM_RANGE;
-use std::collections::HashMap;
-use std::iter::FromIterator;
 
 #[test]
 fn dense_sparse_index_out_of_bounds() {
-    use MatrixComparisonFailure::SparseIndicesOutOfBounds;
+    use MatrixComparisonFailure::SparseEntryOutOfBounds;
 
     macro_rules! assert_out_of_bounds_detected {
         ($dense:expr, $sparse:expr, $oob:expr) => {
             // Dense-sparse
             {
                 let result = compare_matrices(&$dense, &$sparse, &ExactElementwiseComparator);
-                let oob = OutOfBoundsIndices {
-                    indices_x: vec![],
-                    indices_y: $oob.clone(),
-                };
-                assert_eq!(result, Err(SparseIndicesOutOfBounds(oob)))
+                let err = result.unwrap_err();
+                match err {
+                    SparseEntryOutOfBounds(Entry::Right(coord)) => assert!($oob.contains(&coord)),
+                    _ => panic!("Unexpected variant")
+                }
             }
 
             // Sparse-dense
             {
                 let result = compare_matrices(&$sparse, &$dense, &ExactElementwiseComparator);
-                let oob = OutOfBoundsIndices {
-                    indices_x: $oob.clone(),
-                    indices_y: vec![],
-                };
-                assert_eq!(result, Err(SparseIndicesOutOfBounds(oob)))
+                let err = result.unwrap_err();
+                match err {
+                    SparseEntryOutOfBounds(Entry::Left(coord)) => assert!($oob.contains(&coord)),
+                    _ => panic!("Unexpected variant")
+                }
             }
         };
     }
@@ -76,7 +74,7 @@ fn dense_sparse_index_out_of_bounds() {
 
 #[test]
 fn dense_sparse_duplicate_entries() {
-    use MatrixComparisonFailure::DuplicateSparseEntries;
+    use MatrixComparisonFailure::DuplicateSparseEntry;
 
     let dense = mock_matrix![1, 2, 3;
                              4, 5, 6];
@@ -88,19 +86,26 @@ fn dense_sparse_duplicate_entries() {
     // Dense-sparse
     {
         let result = compare_matrices(&dense, &sparse, &ExactElementwiseComparator);
-        assert_eq!(result, Err(DuplicateSparseEntries(DuplicateEntries {
-            x_duplicates: HashMap::default(),
-            y_duplicates: HashMap::from_iter(vec![((1, 0), vec![6, 3])])
-        })));
+        let err = result.unwrap_err();
+        match err {
+            DuplicateSparseEntry(Entry::Right(coord)) => assert_eq!(coord, (1, 0)),
+            _ => panic!("Unexpected error")
+        }
+
+        // assert_eq!(result, Err(DuplicateSparseEntries(DuplicateEntries {
+        //     x_duplicates: HashMap::default(),
+        //     y_duplicates: HashMap::from_iter(vec![((1, 0), vec![6, 3])])
+        // })));
     }
 
     // Sparse-dense
     {
         let result = compare_matrices(&sparse, &dense, &ExactElementwiseComparator);
-        assert_eq!(result, Err(DuplicateSparseEntries(DuplicateEntries {
-            x_duplicates: HashMap::from_iter(vec![((1, 0), vec![6, 3])]),
-            y_duplicates: HashMap::default(),
-        })));
+        let err = result.unwrap_err();
+        match err {
+            DuplicateSparseEntry(Entry::Left(coord)) => assert_eq!(coord, (1, 0)),
+            _ => panic!("Unexpected error")
+        }
     }
 }
 
@@ -201,7 +206,7 @@ proptest! {
     fn sparse_and_dense_matrices_indices_out_of_bounds_are_detected(
         (dense, sparse, out_of_bounds_triplets) in dense_sparse_out_of_bounds_pair_strategy()
     ) {
-        use MatrixComparisonFailure::SparseIndicesOutOfBounds;
+        use MatrixComparisonFailure::SparseEntryOutOfBounds;
         let c = ExactElementwiseComparator;
 
         let mut out_of_bounds_indices: Vec<_> = out_of_bounds_triplets
@@ -213,25 +218,23 @@ proptest! {
         // Compare dense-sparse
         {
             let result = compare_matrices(&dense, &sparse, &c);
-            let expected_out_of_bounds = OutOfBoundsIndices {
-                indices_x: vec![],
-                indices_y: out_of_bounds_indices.clone()
-            };
-
-            let expected_err = Err(SparseIndicesOutOfBounds(expected_out_of_bounds));
-            prop_assert_eq!(result, expected_err);
+            let err = result.unwrap_err();
+            match err {
+                SparseEntryOutOfBounds(Entry::Right(coord))
+                    => prop_assert!(out_of_bounds_indices.contains(&coord)),
+                _ => prop_assert!(false)
+            }
         }
 
         // Compare sparse-dense
         {
             let result = compare_matrices(&sparse, &dense, &c);
-            let expected_out_of_bounds = OutOfBoundsIndices {
-                indices_x: out_of_bounds_indices.clone(),
-                indices_y: vec![],
-            };
-
-            let expected_err = Err(SparseIndicesOutOfBounds(expected_out_of_bounds));
-            prop_assert_eq!(result, expected_err);
+            let err = result.unwrap_err();
+            match err {
+                SparseEntryOutOfBounds(Entry::Left(coord))
+                    => prop_assert!(out_of_bounds_indices.contains(&coord)),
+                _ => prop_assert!(false)
+            }
         }
     }
 

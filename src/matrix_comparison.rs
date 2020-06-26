@@ -1,45 +1,34 @@
 use crate::comparators::ElementwiseComparator;
-use crate::{
-    Access, DenseAccess, DimensionMismatch, DuplicateEntries, ElementsMismatch, Matrix,
-    MatrixComparisonFailure, MatrixElementComparisonFailure, OutOfBoundsIndices, SparseAccess,
-};
+use crate::{Access, DenseAccess, DimensionMismatch, ElementsMismatch, Matrix, MatrixComparisonFailure, MatrixElementComparisonFailure, SparseAccess, Coordinate};
 use num::Zero;
 use std::collections::{HashMap, HashSet};
 
-type DuplicateEntriesMap<T> = HashMap<(usize, usize), Vec<T>>;
+use crate::Entry;
 
-fn try_build_hash_map_from_triplets<T>(
+enum HashMapBuildError {
+    OutOfBoundsCoord(Coordinate),
+    DuplicateCoord(Coordinate)
+}
+
+fn try_build_sparse_hash_map<T>(
+    rows: usize,
+    cols: usize,
     triplets: &[(usize, usize, T)],
-) -> Result<HashMap<(usize, usize), T>, DuplicateEntriesMap<T>>
-where
-    T: Clone,
+) -> Result<HashMap<(usize, usize), T>, HashMapBuildError>
+    where
+        T: Clone,
 {
-    let mut duplicates = DuplicateEntriesMap::new();
     let mut matrix = HashMap::new();
 
     for (i, j, v) in triplets.iter().cloned() {
-        if let Some(old_entry) = matrix.insert((i, j), v) {
-            duplicates
-                .entry((i, j))
-                .or_insert_with(|| Vec::new())
-                .push(old_entry);
+        if i >= rows || j >= cols {
+            return Err(HashMapBuildError::OutOfBoundsCoord((i, j)));
+        } else if let Some(_) = matrix.insert((i, j), v) {
+            return Err(HashMapBuildError::DuplicateCoord((i, j)));
         }
     }
 
-    if duplicates.is_empty() {
-        Ok(matrix)
-    } else {
-        // If there are duplicates, we must also be sure to update the duplicates map with
-        // the duplicate entries that are still in the matrix hash map
-        for (key, ref mut values) in &mut duplicates {
-            values.push(matrix.get(key).cloned().expect(
-                "Entry (i, j) must be in the map,\
-                 otherwise it wouldn't be in duplicates",
-            ));
-        }
-
-        Err(duplicates)
-    }
+    Ok(matrix)
 }
 
 fn compare_sparse_sparse<T, C>(
@@ -57,81 +46,97 @@ where
     let x_triplets = x.fetch_triplets();
     let y_triplets = y.fetch_triplets();
 
-    let x_out_of_bounds = find_out_of_bounds_indices(x.rows(), x.cols(), &x_triplets);
-    let y_out_of_bounds = find_out_of_bounds_indices(y.rows(), y.cols(), &y_triplets);
+    let x_hash = try_build_sparse_hash_map(x.rows(), x.cols(), &x_triplets)
+        .map_err(|build_error| match build_error {
+            HashMapBuildError::OutOfBoundsCoord(coord)
+                => MatrixComparisonFailure::SparseEntryOutOfBounds(Entry::Left(coord)),
+            HashMapBuildError::DuplicateCoord(coord)
+                => MatrixComparisonFailure::DuplicateSparseEntry(Entry::Left(coord))
+        })?;
 
-    if !x_out_of_bounds.is_empty() || !y_out_of_bounds.is_empty() {
-        Err(MatrixComparisonFailure::SparseIndicesOutOfBounds(
-            OutOfBoundsIndices {
-                indices_x: x_out_of_bounds,
-                indices_y: y_out_of_bounds,
+    let y_hash = try_build_sparse_hash_map(y.rows(), y.cols(), &y_triplets)
+        .map_err(|build_error| match build_error {
+            HashMapBuildError::OutOfBoundsCoord(coord)
+            => MatrixComparisonFailure::SparseEntryOutOfBounds(Entry::Right(coord)),
+            HashMapBuildError::DuplicateCoord(coord)
+            => MatrixComparisonFailure::DuplicateSparseEntry(Entry::Right(coord))
+        })?;
+
+    let mut mismatches = Vec::new();
+    let x_keys: HashSet<_> = x_hash.keys().collect();
+    let y_keys: HashSet<_> = y_hash.keys().collect();
+    let zero = T::zero();
+
+    for coord in x_keys.union(&y_keys) {
+        let a = x_hash.get(coord).unwrap_or(&zero);
+        let b = y_hash.get(coord).unwrap_or(&zero);
+        if let Err(error) = comparator.compare(&a, &b) {
+            mismatches.push(MatrixElementComparisonFailure {
+                x: a.clone(),
+                y: b.clone(),
+                error,
+                row: coord.0,
+                col: coord.1,
+            });
+        }
+    }
+
+    // Sorting the mismatches by (i, j) gives us predictable output, independent of e.g.
+    // the order we compare the two matrices.
+    mismatches.sort_by_key(|mismatch| (mismatch.row, mismatch.col));
+
+    if mismatches.is_empty() {
+        Ok(())
+    } else {
+        Err(MatrixComparisonFailure::MismatchedElements(
+            ElementsMismatch {
+                comparator_description: comparator.description(),
+                mismatches,
             },
         ))
-    } else {
-        let x_hash = try_build_hash_map_from_triplets(&x_triplets);
-        let y_hash = try_build_hash_map_from_triplets(&y_triplets);
-
-        if x_hash.is_err() || y_hash.is_err() {
-            let x_duplicates = x_hash.err().unwrap_or(HashMap::new());
-            let y_duplicates = y_hash.err().unwrap_or(HashMap::new());
-            Err(MatrixComparisonFailure::DuplicateSparseEntries(
-                DuplicateEntries {
-                    x_duplicates,
-                    y_duplicates,
-                },
-            ))
-        } else {
-            let mut mismatches = Vec::new();
-            let x_hash = x_hash.ok().unwrap();
-            let y_hash = y_hash.ok().unwrap();
-            let x_keys: HashSet<_> = x_hash.keys().collect();
-            let y_keys: HashSet<_> = y_hash.keys().collect();
-            let zero = T::zero();
-
-            for key in x_keys.union(&y_keys) {
-                let a = x_hash.get(key).unwrap_or(&zero);
-                let b = y_hash.get(key).unwrap_or(&zero);
-                if let Err(error) = comparator.compare(&a, &b) {
-                    mismatches.push(MatrixElementComparisonFailure {
-                        x: a.clone(),
-                        y: b.clone(),
-                        error,
-                        row: key.0,
-                        col: key.1,
-                    });
-                }
-            }
-
-            // Sorting the mismatches by (i, j) gives us predictable output, independent of e.g.
-            // the order we compare the two matrices.
-            mismatches.sort_by_key(|mismatch| (mismatch.row, mismatch.col));
-
-            if mismatches.is_empty() {
-                Ok(())
-            } else {
-                Err(MatrixComparisonFailure::MismatchedElements(
-                    ElementsMismatch {
-                        comparator_description: comparator.description(),
-                        mismatches,
-                    },
-                ))
-            }
-        }
     }
 }
 
-fn find_out_of_bounds_indices<T>(
-    rows: usize,
-    cols: usize,
-    triplets: &[(usize, usize, T)],
-) -> Vec<(usize, usize)> {
-    let mut oob_triplets: Vec<_> = triplets
-        .iter()
-        .filter(|&(i, j, _)| i >= &rows || j >= &cols)
-        .map(|&(i, j, _)| (i, j))
-        .collect();
-    oob_triplets.sort();
-    oob_triplets
+fn find_dense_sparse_mismatches<T, C>(
+    dense: &dyn DenseAccess<T>,
+    sparse: &HashMap<(usize, usize), T>,
+    comparator: &C,
+    swap_order: bool,
+) -> Option<ElementsMismatch<T, C::Error>>
+where
+    T: Zero + Clone,
+    C: ElementwiseComparator<T>,
+{
+    // We assume the compatibility of dimensions have been checked by the outer calling function
+
+    let mut mismatches = Vec::new();
+    let zero = T::zero();
+
+    for i in 0..dense.rows() {
+        for j in 0..dense.cols() {
+            let a = &dense.fetch_single(i, j);
+            let b = sparse.get(&(i, j)).unwrap_or(&zero);
+            let (a, b) = if swap_order { (b, a) } else { (a, b) };
+            if let Err(error) = comparator.compare(a, b) {
+                mismatches.push(MatrixElementComparisonFailure {
+                    x: a.clone(),
+                    y: b.clone(),
+                    error,
+                    row: i,
+                    col: j,
+                });
+            }
+        }
+    }
+
+    if mismatches.is_empty() {
+        None
+    } else {
+        Some(ElementsMismatch {
+                comparator_description: comparator.description(),
+                mismatches,
+        })
+    }
 }
 
 fn compare_dense_sparse<T, C>(
@@ -149,71 +154,30 @@ where
 
     let y_triplets = y.fetch_triplets();
 
-    let y_out_of_bounds = find_out_of_bounds_indices(y.rows(), y.cols(), &y_triplets);
-    if !y_out_of_bounds.is_empty() {
-        let oob = if swap_order {
-            OutOfBoundsIndices {
-                indices_x: y_out_of_bounds,
-                indices_y: Vec::new(),
-            }
-        } else {
-            OutOfBoundsIndices {
-                indices_x: Vec::new(),
-                indices_y: y_out_of_bounds,
-            }
-        };
+    let y_hash = try_build_sparse_hash_map(y.rows(), y.cols(), &y_triplets);
 
-        Err(MatrixComparisonFailure::SparseIndicesOutOfBounds(oob))
-    } else {
-        let y_hash = try_build_hash_map_from_triplets(&y_triplets);
-
-        if let Err(y_duplicates) = y_hash {
-            if swap_order {
-                Err(MatrixComparisonFailure::DuplicateSparseEntries(
-                    DuplicateEntries {
-                        x_duplicates: y_duplicates,
-                        y_duplicates: HashMap::default()
-                    },
-                ))
+    match y_hash {
+        Ok(y_hash) => {
+            let mismatches = find_dense_sparse_mismatches(x, &y_hash, comparator, swap_order);
+            if let Some(mismatches) = mismatches {
+                Err(MatrixComparisonFailure::MismatchedElements(mismatches))
             } else {
-                Err(MatrixComparisonFailure::DuplicateSparseEntries(
-                    DuplicateEntries {
-                        x_duplicates: HashMap::default(),
-                        y_duplicates
-                    },
-                ))
-            }
-        } else {
-            let mut mismatches = Vec::new();
-            let y_hash = y_hash.ok().unwrap();
-            let zero = T::zero();
-
-            for i in 0..x.rows() {
-                for j in 0..x.cols() {
-                    let a = &x.fetch_single(i, j);
-                    let b = y_hash.get(&(i, j)).unwrap_or(&zero);
-                    let (a, b) = if swap_order { (b, a) } else { (a, b) };
-                    if let Err(error) = comparator.compare(a, b) {
-                        mismatches.push(MatrixElementComparisonFailure {
-                            x: a.clone(),
-                            y: b.clone(),
-                            error,
-                            row: i,
-                            col: j,
-                        });
-                    }
-                }
-            }
-
-            if mismatches.is_empty() {
                 Ok(())
+            }
+        },
+        Err(build_error) => {
+            let make_entry = |coord| if swap_order {
+                Entry::Left(coord)
             } else {
-                Err(MatrixComparisonFailure::MismatchedElements(
-                    ElementsMismatch {
-                        comparator_description: comparator.description(),
-                        mismatches,
-                    },
-                ))
+                Entry::Right(coord)
+            };
+
+            use MatrixComparisonFailure::*;
+            match build_error {
+                HashMapBuildError::OutOfBoundsCoord(coord)
+                    => Err(SparseEntryOutOfBounds(make_entry(coord))),
+                HashMapBuildError::DuplicateCoord(coord)
+                    => Err(DuplicateSparseEntry(make_entry(coord)))
             }
         }
     }

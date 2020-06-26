@@ -1,5 +1,4 @@
 use core::fmt;
-use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
 const MAX_MISMATCH_REPORTS: usize = 12;
@@ -75,38 +74,54 @@ Dimensions of matrices X and Y do not match.
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OutOfBoundsIndices {
-    pub indices_x: Vec<(usize, usize)>,
-    pub indices_y: Vec<(usize, usize)>,
+pub type Coordinate = (usize, usize);
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum Entry {
+    Left(Coordinate),
+    Right(Coordinate)
 }
 
-impl OutOfBoundsIndices {
-    pub fn reverse(self) -> Self {
-        Self {
-            indices_x: self.indices_y,
-            indices_y: self.indices_x,
+impl Display for Entry {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Left((i, j)) => {
+                write!(f, "Left({}, {})", i, j)
+            },
+            Self::Right((i, j)) => {
+                write!(f, "Right({}, {})", i, j)
+            }
         }
     }
 }
 
-impl Display for OutOfBoundsIndices {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        if !self.indices_x.is_empty() {
-            writeln!(f, "Out of bounds indices in X:")?;
-            for (i, j) in &self.indices_x {
-                writeln!(f, "    ({}, {}", i, j)?;
-            }
+impl Entry {
+    pub fn reverse(&self) -> Self {
+        match self {
+            Self::Left(coord) => Self::Right(*coord),
+            Self::Right(coord) => Self::Left(*coord)
         }
-        if !self.indices_y.is_empty() {
-            writeln!(f, "Out of bounds indices in Y:")?;
-            for (i, j) in &self.indices_y {
-                writeln!(f, "    ({}, {}", i, j)?;
-            }
-        }
-        Ok(())
     }
 }
+
+// TODO: Remove impl
+// impl Display for OutOfBoundsIndices {
+//     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+//         if !self.indices_x.is_empty() {
+//             writeln!(f, "Out of bounds indices in X:")?;
+//             for (i, j) in &self.indices_x {
+//                 writeln!(f, "    ({}, {}", i, j)?;
+//             }
+//         }
+//         if !self.indices_y.is_empty() {
+//             writeln!(f, "Out of bounds indices in Y:")?;
+//             for (i, j) in &self.indices_y {
+//                 writeln!(f, "    ({}, {}", i, j)?;
+//             }
+//         }
+//         Ok(())
+//     }
+// }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ElementsMismatch<T, Error> {
@@ -177,56 +192,11 @@ Comparison criterion: {description}
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct DuplicateEntries<T> {
-    pub x_duplicates: HashMap<(usize, usize), Vec<T>>,
-    pub y_duplicates: HashMap<(usize, usize), Vec<T>>,
-}
-
-impl<T> DuplicateEntries<T> {
-    // TODO: Remove these reverse impls, as they would only lead to confusing error messages.
-    // IIRC we only use it for testing symmetry properties, which we can do in some other
-    // way.
-    pub fn reverse(self) -> Self {
-        Self {
-            x_duplicates: self.y_duplicates,
-            y_duplicates: self.x_duplicates,
-        }
-    }
-}
-
-impl<T> Display for DuplicateEntries<T>
-where
-    T: Display,
-{
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        writeln!(f, "Duplicate entries detected in input matrix.")?;
-
-        let mut print_duplicates = |name, duplicates: &HashMap<_, _>| {
-            if !duplicates.is_empty() {
-                writeln!(f, "Duplicate entries in {}:", name)?;
-                for ((i, j), values) in duplicates {
-                    write!(f, "    ({}, {}): ", i, j)?;
-                    for v in values {
-                        write!(f, "{}, ", v)?;
-                    }
-                    writeln!(f)?;
-                }
-            }
-            Ok(())
-        };
-
-        print_duplicates("X", &self.x_duplicates)?;
-        print_duplicates("Y", &self.y_duplicates)?;
-        Ok(())
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
 pub enum MatrixComparisonFailure<T, Error> {
     MismatchedDimensions(DimensionMismatch),
     MismatchedElements(ElementsMismatch<T, Error>),
-    SparseIndicesOutOfBounds(OutOfBoundsIndices),
-    DuplicateSparseEntries(DuplicateEntries<T>),
+    SparseEntryOutOfBounds(Entry),
+    DuplicateSparseEntry(Entry),
 }
 
 impl<T, E> std::error::Error for MatrixComparisonFailure<T, E>
@@ -243,8 +213,8 @@ impl<T, Error> MatrixComparisonFailure<T, Error> {
         match self {
             MismatchedDimensions(dim) => MismatchedDimensions(dim.reverse()),
             MismatchedElements(elements) => MismatchedElements(elements.reverse()),
-            SparseIndicesOutOfBounds(indices) => SparseIndicesOutOfBounds(indices.reverse()),
-            DuplicateSparseEntries(duplicates) => DuplicateSparseEntries(duplicates.reverse()),
+            SparseEntryOutOfBounds(out_of_bounds) => SparseEntryOutOfBounds(out_of_bounds.reverse()),
+            DuplicateSparseEntry(entry) => SparseEntryOutOfBounds(entry.reverse()),
         }
     }
 }
@@ -258,10 +228,12 @@ where
         match self {
             &MatrixComparisonFailure::MismatchedElements(ref mismatch) => mismatch.fmt(f),
             &MatrixComparisonFailure::MismatchedDimensions(ref mismatch) => mismatch.fmt(f),
-            &MatrixComparisonFailure::SparseIndicesOutOfBounds(ref out_of_bounds) => {
-                out_of_bounds.fmt(f)
+            &MatrixComparisonFailure::SparseEntryOutOfBounds(entry) => {
+                write!(f, r"At least one sparse entry is out of bounds. Example: {}.", entry)
             }
-            &MatrixComparisonFailure::DuplicateSparseEntries(ref duplicate) => duplicate.fmt(f),
+            &MatrixComparisonFailure::DuplicateSparseEntry(entry) => {
+                write!(f, r"At least one duplicate sparse entry detected. Example: {}.", entry)
+            }
         }
     }
 }
