@@ -1,5 +1,6 @@
 matrixcompare
 =============
+!["CI badge"](https://github.com/Andlon/matrixcompare/workflows/Build%20and%20run%20tests/badge.svg)
 
 matrixcompare is a utility library for comparing matrices (dense or sparse)
 for testing/debugging purposes. To that effect, it provides functions
@@ -9,13 +10,17 @@ a convenient API. matrixcompare does not provide any matrices of its own,
 but is instead intended to be integrated into libraries that provide these
 kind of data structures.
 
-matrixcompare guarantees that for two matrices `A` and `B`, the comparison
-takes place in `O(log(nnz(A)) nnz(A) + log(nnz(B)) nnz(B))`, where `nnz(_)`
-is the number of structural non-zeros of the matrix. For a dense matrix `A`
-with `m` rows and `n` columns, `nnz(A) = m * n`.
-Beyond this basic complexity guarantee, there is no emphasis
-on performance, and instead the focus is on ease of use and integration.
-Note that the logarithm in the complexity bound is a result of sorting
-the test results in the event that there are errors.
+Please see the [documentation](https://crates.io/matrixcompare) for more information.
 
-TODO: More docs/readme
+Contributing
+============
+
+Contributions are welcome! For any larger contribution, it is however advisable to write up
+your ideas in an issue before you commence work. This is particularly true for contributions
+which would significantly increase the scope of the project.
+
+License
+=======
+
+`matrixcompare` is licensed under the MIT license.
+See the `LICENSE` file in the repository for the exact license.
