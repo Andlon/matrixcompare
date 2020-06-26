@@ -203,6 +203,14 @@ fn dense_sparse_out_of_bounds_pair_strategy() -> impl Strategy<
 
 proptest! {
     #[test]
+    fn sparse_dense_self_comparison_succeeds_i64(
+        sparse in sparse_matrix_strategy_i64(MATRIX_DIM_RANGE, MATRIX_DIM_RANGE)
+    ) {
+        let c = ExactElementwiseComparator;
+        prop_assert!(compare_matrices(&sparse, &sparse.to_dense().unwrap(), &c).is_ok());
+    }
+
+    #[test]
     fn sparse_and_dense_matrices_indices_out_of_bounds_are_detected(
         (dense, sparse, out_of_bounds_triplets) in dense_sparse_out_of_bounds_pair_strategy()
     ) {

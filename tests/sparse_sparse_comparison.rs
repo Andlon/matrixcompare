@@ -21,6 +21,13 @@ fn same_size_sparse_sparse_matrices(
 
 proptest! {
     #[test]
+    fn sparse_sparse_self_comparison_succeeds_i64(
+        sparse in sparse_matrix_strategy_i64(MATRIX_DIM_RANGE, MATRIX_DIM_RANGE)
+    ) {
+        prop_assert!(compare_matrices(&sparse, &sparse, &ExactElementwiseComparator).is_ok())
+    }
+
+    #[test]
     fn sparse_sparse_matrices_should_compare_the_same_as_dense_dense_i64(
         sparse1 in sparse_matrix_strategy_i64(MATRIX_DIM_RANGE, MATRIX_DIM_RANGE),
         sparse2 in sparse_matrix_strategy_i64(MATRIX_DIM_RANGE, MATRIX_DIM_RANGE)
