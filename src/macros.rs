@@ -46,8 +46,7 @@
 /// ### The `float` comparator
 /// The `float` comparator is designed to be a conservative default for comparing floating-point numbers.
 /// It is inspired by the `AlmostEqualUlpsAndAbs` comparison function proposed in the excellent blog post
-/// [Comparing Floating Point Numbers, 2012 Edition]
-/// (https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/)
+/// [Comparing Floating Point Numbers, 2012 Edition](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/)
 /// by Bruce Dawson.
 ///
 /// If you expect the two matrices to be almost exactly the same, but you want to leave some
@@ -92,8 +91,7 @@
 /// Elementwise comparison of floating point numbers based on their
 /// [ULP](https://en.wikipedia.org/wiki/Unit_in_the_last_place) difference.
 /// Once again, this is inspired by the proposals
-/// [in the aforementioned blog post by Bruce Dawon]
-/// (https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/),
+/// [in the aforementioned blog post by Bruce Dawson](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition),
 /// but it handles some cases explicitly as to provide better error reporting.
 ///
 /// Note that the ULP difference of two floating point numbers is not defined in the following cases:
