@@ -30,7 +30,7 @@ pub enum UlpComparisonResult {
 ///
 /// Implementations for `f32` and `f64` are already available, and so users should not normally
 /// need to implement this. In the case when a custom implementation is necessary,
-/// please see the possible return values for [UlpComparisonResult](ulp/enum.UlpComparisonResult.html).
+/// please see the possible return values for [UlpComparisonResult](enum.UlpComparisonResult.html).
 /// Otherwise, we can recommend to read the source code of the included `f32` and `f64` implementations.
 pub trait Ulp {
     /// Returns the difference between two floating point numbers, measured in ULP.
