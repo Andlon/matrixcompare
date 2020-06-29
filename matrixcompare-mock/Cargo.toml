@@ -9,6 +9,6 @@ description = "Internal mock data structures for testing of matrixcompare"
 
 [dependencies]
 num = "0.3"
-matrixcompare = { path = "..", version="0.1" }
+matrixcompare-core = { path = "../matrixcompare-core", version="0.1" }
 proptest = "0.10"
 

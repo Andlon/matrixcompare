@@ -2,7 +2,7 @@
 //! `matrixcompare` crate. Not intended for usage outside of
 //! `matrixcompare` tests.
 
-use matrixcompare::{Access, DenseAccess, Matrix, SparseAccess};
+use matrixcompare_core::{Access, DenseAccess, Matrix, SparseAccess};
 use proptest::prelude::*;
 use std::fmt::Debug;
 
@@ -222,23 +222,4 @@ pub fn sparse_matrix_strategy_normal_f64(
     cols: impl Strategy<Value = usize>,
 ) -> impl Strategy<Value = MockSparseMatrix<f64>> {
     sparse_matrix_strategy(rows, cols, proptest::num::f64::NORMAL)
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::{mock_matrix, MockSparseMatrix};
-    use matrixcompare::assert_matrix_eq;
-
-    #[test]
-    fn sparse_dense() {
-        let triplets = vec![(0, 0, 3), (1, 0, 2), (0, 3, 1), (0, 2, 2)];
-        let matrix = MockSparseMatrix::from_triplets(2, 4, triplets)
-            .to_dense()
-            .unwrap();
-        let expected = mock_matrix![
-            3, 0, 2, 1;
-            2, 0, 0, 0
-        ];
-        assert_matrix_eq!(matrix, expected);
-    }
 }
