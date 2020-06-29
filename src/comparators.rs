@@ -2,7 +2,7 @@
 
 use crate::ulp::{Ulp, UlpComparisonResult};
 
-use num::{Float, Num};
+use num_traits::{Float, Num};
 
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -51,7 +51,7 @@ where
     fn compare(&self, a: &T, b: &T) -> Result<(), AbsoluteError<T>> {
         assert!(self.tol >= T::zero());
 
-        // Note: Cannot use num::abs because we do not want to restrict
+        // Note: Cannot use num_traits::abs because we do not want to restrict
         // ourselves to Signed types (i.e. we still want to be able to
         // handle unsigned types).
 

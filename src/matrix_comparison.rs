@@ -3,7 +3,7 @@ use crate::{
     Access, Coordinate, DenseAccess, DimensionMismatch, ElementsMismatch, Matrix,
     MatrixComparisonFailure, MatrixElementComparisonFailure, SparseAccess,
 };
-use num::Zero;
+use num_traits::Zero;
 use std::collections::{HashMap, HashSet};
 
 use crate::Entry;

@@ -8,7 +8,7 @@ repository = "https://github.com/Andlon/matrixcompare"
 keywords = [ "matrix", "comparison", "linear algebra" ]
 
 [dependencies]
-num = "0.3"
+num-traits = "0.2"
 matrixcompare-core = { path = "matrixcompare-core", version="0.1"}
 
 [dev-dependencies]
