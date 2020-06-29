@@ -6,5 +6,6 @@ edition = "2018"
 license = "MIT"
 repository = "https://github.com/Andlon/matrixcompare"
 keywords = [ "matrix", "comparison", "linear algebra" ]
+description = "Core traits for matrixcompare"
 
 [dependencies]
