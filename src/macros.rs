@@ -1,3 +1,95 @@
+
+/// Internal macro used for providing consistent macro arguments across several macros
+#[doc(hidden)]
+#[macro_export]
+macro_rules! base_matrix_eq {
+    ($failure_handler:expr, $x:expr, $y:expr) => {
+        {
+            use $crate::{compare_matrices};
+            use $crate::comparators::ExactElementwiseComparator;
+
+            let comp = ExactElementwiseComparator;
+            let result = compare_matrices(&$x, &$y, &comp);
+            if let Err(failure) = result {
+                // Note: We need the panic to incur here inside of the macro in order
+                // for the line number to be correct when using it for tests,
+                // hence we build the panic message in code, but panic here.
+                let message = format!("{}\n
+Please see the documentation for ways to compare matrices approximately.\n",
+                    failure);
+                return $failure_handler(message);
+            }
+        }
+    };
+    ($failure_handler:expr, $x:expr, $y:expr, comp = exact) => {
+        {
+            use $crate::{compare_matrices};
+            use $crate::comparators::ExactElementwiseComparator;
+
+            let comp = ExactElementwiseComparator;
+            let result = compare_matrices(&$x, &$y, &comp);
+            if let Err(failure) = result {
+                let message = format!("{}\n", failure);
+                return $failure_handler(message);
+            }
+        }
+    };
+    ($failure_handler:expr, $x:expr, $y:expr, comp = abs, tol = $tol:expr) => {
+        {
+            use $crate::{compare_matrices};
+            use $crate::comparators::AbsoluteElementwiseComparator;
+
+            let comp = AbsoluteElementwiseComparator { tol: $tol };
+            let result = compare_matrices(&$x, &$y, &comp);
+            if let Err(failure) = result {
+                let message = format!("{}\n", failure);
+                return $failure_handler(message);
+            }
+        }
+    };
+    ($failure_handler:expr, $x:expr, $y:expr, comp = ulp, tol = $tol:expr) => {
+        {
+            use $crate::{compare_matrices};
+            use $crate::comparators::UlpElementwiseComparator;
+
+            let comp = UlpElementwiseComparator { tol: $tol };
+            let result = compare_matrices(&$x, &$y, &comp);
+            if let Err(failure) = result {
+                let message = format!("{}\n", failure);
+                return $failure_handler(message);
+            }
+        }
+    };
+    ($failure_handler:expr, $x:expr, $y:expr, comp = float) => {
+        {
+            use $crate::{compare_matrices};
+            use $crate::comparators::FloatElementwiseComparator;
+
+            let comp = FloatElementwiseComparator::default();
+            let result = compare_matrices(&$x, &$y, &comp);
+            if let Err(failure) = result {
+                let message = format!("{}", failure);
+                return $failure_handler(message);
+            }
+        }
+    };
+    // This following allows us to optionally tweak the epsilon and ulp tolerances
+    // used in the default float comparator.
+    ($failure_handler:expr, $x:expr, $y:expr, comp = float, $($key:ident = $val:expr),+) => {
+        {
+            use $crate::{compare_matrices};
+            use $crate::comparators::FloatElementwiseComparator;
+
+            let comp = FloatElementwiseComparator::default()$(.$key($val))+;
+            let result = compare_matrices(&$x, &$y, &comp);
+            if let Err(failure) = result {
+                let message = format!("{}", failure);
+                return $failure_handler(message);
+            }
+        }
+    };
+}
+
 /// Compare matrices for exact or approximate equality.
 ///
 /// The `assert_matrix_eq!` simplifies the comparison of two matrices by
@@ -167,82 +259,95 @@
 /// ```
 #[macro_export]
 macro_rules! assert_matrix_eq {
-    ($x:expr, $y:expr) => {
-        {
-            use $crate::{compare_matrices};
-            use $crate::comparators::ExactElementwiseComparator;
+    ($($args:tt)*) => {
+        $crate::base_matrix_eq!(|msg| panic!(msg), $($args)*);
+    };
+}
 
+/// Internal macro used for providing consistent macro arguments across several scalar comparison
+/// macros.
+#[doc(hidden)]
+#[macro_export]
+macro_rules! base_scalar_eq {
+    ($failure_handler:expr, $x:expr, $y:expr) => {
+        {
+            use $crate::{compare_scalars};
+            use $crate::comparators::ExactElementwiseComparator;
+            use std::borrow::Borrow;
             let comp = ExactElementwiseComparator;
-            let result = compare_matrices(&$x, &$y, &comp);
-            if let Err(failure) = result {
-                // Note: We need the panic to incur here inside of the macro in order
-                // for the line number to be correct when using it for tests,
-                // hence we build the panic message in code, but panic here.
-                panic!("{}\
-                    Please see the documentation for ways to compare matrices approximately.\n\n",
-                    failure);
+            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
+            if let Err(error) = result {
+                let message = format!("{}\n
+Please see the documentation for ways to compare scalars approximately.\n",
+                    error);
+                return $failure_handler(message);
             }
         }
     };
-    ($x:expr, $y:expr, comp = exact) => {
+    ($failure_handler:expr, $x:expr, $y:expr, comp = exact) => {
         {
-            use $crate::{compare_matrices};
+            use $crate::{compare_scalars};
             use $crate::comparators::ExactElementwiseComparator;
-
+            use std::borrow::Borrow;
             let comp = ExactElementwiseComparator;
-            let result = compare_matrices(&$x, &$y, &comp);
-            if let Err(failure) = result {
-                panic!("{}", failure);
+            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
+            if let Err(error) = result {
+                let message = format!("{}\n", error);
+                return $failure_handler(message);
             }
         }
     };
-    ($x:expr, $y:expr, comp = abs, tol = $tol:expr) => {
+    ($failure_handler:expr, $x:expr, $y:expr, comp = abs, tol = $tol:expr) => {
         {
-            use $crate::{compare_matrices};
+            use $crate::{compare_scalars};
             use $crate::comparators::AbsoluteElementwiseComparator;
-
-            let comp = AbsoluteElementwiseComparator { tol: $tol };
-            let result = compare_matrices(&$x, &$y, &comp);
-            if let Err(failure) = result {
-                panic!("{}", failure);
+            use std::borrow::Borrow;
+            let comp = AbsoluteElementwiseComparator { tol: $tol.clone() };
+            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
+            if let Err(error) = result {
+                let message = format!("{}\n", error);
+                return $failure_handler(message);
             }
         }
     };
-    ($x:expr, $y:expr, comp = ulp, tol = $tol:expr) => {
+    ($failure_handler:expr, $x:expr, $y:expr, comp = ulp, tol = $tol:expr) => {
         {
-            use $crate::{compare_matrices};
+            use $crate::{compare_scalars};
             use $crate::comparators::UlpElementwiseComparator;
-
-            let comp = UlpElementwiseComparator { tol: $tol };
-            let result = compare_matrices(&$x, &$y, &comp);
-            if let Err(failure) = result {
-                panic!("{}", failure);
+            use std::borrow::Borrow;
+            let comp = UlpElementwiseComparator { tol: $tol.clone() };
+            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
+            if let Err(error) = result {
+                let message = format!("{}\n", error);
+                return $failure_handler(message);
             }
         }
     };
-    ($x:expr, $y:expr, comp = float) => {
+    ($failure_handler:expr, $x:expr, $y:expr, comp = float) => {
         {
-            use $crate::{compare_matrices};
+            use $crate::{compare_scalars};
             use $crate::comparators::FloatElementwiseComparator;
-
+            use std::borrow::Borrow;
             let comp = FloatElementwiseComparator::default();
-            let result = compare_matrices(&$x, &$y, &comp);
-            if let Err(failure) = result {
-                panic!("{}", failure);
+            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
+            if let Err(error) = result {
+                let message = format!("{}\n", error);
+                return $failure_handler(message);
             }
         }
     };
-    // This following allows us to optionally tweak the epsilon and ulp tolerances
+    // The following allows us to optionally tweak the epsilon and ulp tolerances
     // used in the default float comparator.
-    ($x:expr, $y:expr, comp = float, $($key:ident = $val:expr),+) => {
+    ($failure_handler:expr, $x:expr, $y:expr, comp = float, $($key:ident = $val:expr),+) => {
         {
-            use $crate::{compare_matrices};
+            use $crate::{compare_scalars};
             use $crate::comparators::FloatElementwiseComparator;
-
+            use std::borrow::Borrow;
             let comp = FloatElementwiseComparator::default()$(.$key($val))+;
-            let result = compare_matrices(&$x, &$y, &comp);
-            if let Err(failure) = result {
-                panic!("{}", failure);
+            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
+            if let Err(error) = result {
+                let message = format!("{}\n", error);
+                return $failure_handler(message);
             }
         }
     };
@@ -268,80 +373,7 @@ macro_rules! assert_matrix_eq {
 /// ```
 #[macro_export]
 macro_rules! assert_scalar_eq {
-    ($x:expr, $y:expr) => {
-        {
-            use $crate::{compare_scalars};
-            use $crate::comparators::ExactElementwiseComparator;
-            use std::borrow::Borrow;
-            let comp = ExactElementwiseComparator;
-            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
-            if let Err(error) = result {
-                panic!("{}\n\
-                        Please see the documentation for ways to compare scalars approximately.\n\n",
-                        error);
-            }
-        }
-    };
-    ($x:expr, $y:expr, comp = exact) => {
-        {
-            use $crate::{compare_scalars};
-            use $crate::comparators::ExactElementwiseComparator;
-            use std::borrow::Borrow;
-            let comp = ExactElementwiseComparator;
-            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
-            if let Err(error) = result {
-                panic!(error);
-            }
-        }
-    };
-    ($x:expr, $y:expr, comp = abs, tol = $tol:expr) => {
-        {
-            use $crate::{compare_scalars};
-            use $crate::comparators::AbsoluteElementwiseComparator;
-            use std::borrow::Borrow;
-            let comp = AbsoluteElementwiseComparator { tol: $tol.clone() };
-            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
-            if let Err(error) = result {
-                panic!(error);
-            }
-        }
-    };
-    ($x:expr, $y:expr, comp = ulp, tol = $tol:expr) => {
-        {
-            use $crate::{compare_scalars};
-            use $crate::comparators::UlpElementwiseComparator;
-            use std::borrow::Borrow;
-            let comp = UlpElementwiseComparator { tol: $tol.clone() };
-            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
-            if let Err(error) = result {
-                panic!(error);
-            }
-        }
-    };
-    ($x:expr, $y:expr, comp = float) => {
-        {
-            use $crate::{compare_scalars};
-            use $crate::comparators::FloatElementwiseComparator;
-            use std::borrow::Borrow;
-            let comp = FloatElementwiseComparator::default();
-            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
-            if let Err(error) = result {
-                panic!(error);
-            }
-        }
-    };
-    // The following allows us to optionally tweak the epsilon and ulp tolerances
-    // used in the default float comparator.
-    ($x:expr, $y:expr, comp = float, $($key:ident = $val:expr),+) => {
-        {
-            use $crate::{compare_scalars};
-            use $crate::comparators::FloatElementwiseComparator;
-            use std::borrow::Borrow;
-            let comp = FloatElementwiseComparator::default()$(.$key($val))+;
-            let result = compare_scalars($x.borrow(), $y.borrow(), comp);
-            if let Err(error) = result {
-                panic!(error);
-            }
-        }
+    ($($args:tt)*) => {
+        $crate::base_scalar_eq!(|msg| panic!(msg), $($args)*);
     };
 }

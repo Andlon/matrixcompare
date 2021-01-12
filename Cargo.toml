@@ -9,12 +9,24 @@ keywords = [ "matrix", "comparison", "linear", "algebra", "linear-algebra" ]
 description = "Tools for convenient comparison of matrices"
 readme = "README.md"
 
+[features]
+proptest-support = [ "proptest"]
+
 [dependencies]
 num-traits = { version = "0.2", default-features = false }
 matrixcompare-core = { path = "matrixcompare-core", version="0.1"}
+proptest = { version = "0.10", optional = true }
 
 [dev-dependencies]
 quickcheck = "0.9"
 matrixcompare-mock = { path = "matrixcompare-mock", version="0.1" }
 proptest = "0.10"
 pretty_assertions = "0.6.1"
+
+[package.metadata.docs.rs]
+# Make sure to build docs for `proptest-support` on `docs.rs`
+features = ["proptest-support"]
+
+[[example]]
+name = "proptest"
+required-features = [ "proptest-support" ]

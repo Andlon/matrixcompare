@@ -56,6 +56,18 @@ The design of `matrixcompare` heavily favors ease of use/integration, correctnes
 flexibility over performance. It is intended to be used for automated tests, and as such does
 not belong in performance sensitive code. There are no particular guarantees about performance,
 other than that the asymptotic complexity is roughly the same as a more optimized implementation.
+
+## `proptest` integration
+
+`proptest` ships its own macros for use with its tests. Although it's possible to directly
+use `assert_matrix_eq!` from `matrixcompare` in proptests, every failing test will result in a
+panic message being written to the error output, which causes unnecessary noise when debugging
+a failing test. To overcome this situation, we provide the macro `prop_assert_matrix_eq!`, which
+works exactly as `assert_matrix_eq!`, except that instead of panicing, it returns errors compatible
+with `proptest`.
+
+To use this feature, the `proptest-support` feature must be enabled.
+
 */
 
 #![allow(clippy::float_cmp)]
@@ -85,3 +97,6 @@ pub use self::comparison_failure::{
 };
 
 pub use matrixcompare_core::*;
+
+#[cfg(feature = "proptest-support")]
+mod proptest;
