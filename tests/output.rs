@@ -1,4 +1,4 @@
-use matrixcompare::comparators::ExactElementwiseComparator;
+use matrixcompare::comparators::{ExactElementwiseComparator, AbsoluteElementwiseComparator};
 use matrixcompare::compare_matrices;
 use matrixcompare_mock::{mock_matrix, MockSparseMatrix};
 
@@ -24,6 +24,29 @@ The mismatched elements are listed below, in the format
  (1, 1): x = 5, y = 4.
 
 Comparison criterion: exact equality x == y."
+    );
+}
+
+#[test]
+fn mismatched_elements_abs_f64() {
+    let a = mock_matrix![1.0, 2.0, 3.0; 4.0, 5.0, 6.0];
+    let b = mock_matrix![1.0, 2.0, 9.0; 5.0, 4.0, 6.0];
+
+    let err = compare_matrices(&a, &b, &AbsoluteElementwiseComparator { tol: 1e-12} ).unwrap_err();
+    let err_string = err.to_string();
+
+    println!("{}", err);
+    assert_eq!(
+        err_string,
+        r"Matrices X (left) and Y (right) have 3 mismatched element pairs.
+The mismatched elements are listed below, in the format
+(row, col): x = X[[row, col]], y = Y[[row, col]].
+
+ (0, 2): x = 3, y = 9. Absolute error: 6.
+ (1, 0): x = 4, y = 5. Absolute error: 1.
+ (1, 1): x = 5, y = 4. Absolute error: 1.
+
+Comparison criterion: absolute difference, |x - y| <= 0.000000000001."
     );
 }
 

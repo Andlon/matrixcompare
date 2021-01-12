@@ -26,7 +26,14 @@ where
             x = self.left,
             y = self.right
         )?;
-        write!(f, "{}", self.error)
+
+        // Write the error into a string first, so that we can add a space between
+        // the element output and the error output only if there is something to report.
+        let error = format!("{}", self.error);
+        if !error.is_empty() {
+            write!(f, " {}", self.error)?;
+        }
+        Ok(())
     }
 }
 
