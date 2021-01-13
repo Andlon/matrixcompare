@@ -10,7 +10,8 @@ a convenient API. matrixcompare does not provide any matrices of its own,
 but is instead intended to be integrated into libraries that provide these
 kind of data structures.
 
-Please see the [documentation](https://docs.rs/matrixcompare) for more information.
+Please see the [documentation](https://docs.rs/matrixcompare) for more information,
+or the [changelog](CHANGELOG.md) for a list of changes in recent releases.
 
 Contributing
 ============
