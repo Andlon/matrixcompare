@@ -25,6 +25,9 @@ jobs:
     - name: Run tests
       run: cargo test --all-targets
 
+    - name: Build matrixcompare-minimal
+      run: cargo build --manifest-path=matrixcompare-minimal/Cargo.toml
+
   windows:
 
     name: Test on Windows
@@ -38,3 +41,8 @@ jobs:
           cargo test --all-targets
         shell: cmd
 
+      - name: Build matrixcompare-minimal
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          cargo build --manifest-path=matrixcompare-minimal/Cargo.toml
+        shell: cmd
