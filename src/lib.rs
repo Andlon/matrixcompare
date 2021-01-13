@@ -66,7 +66,8 @@ a failing test. To overcome this situation, we provide the macro `prop_assert_ma
 works exactly as `assert_matrix_eq!`, except that instead of panicing, it returns errors compatible
 with `proptest`.
 
-To use this feature, the `proptest-support` feature must be enabled.
+To use this feature, the `proptest-support` feature must be enabled. See also the `proptest`
+example in the repository.
 
 */
 

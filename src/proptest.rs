@@ -15,6 +15,8 @@ macro_rules! build_proptest_message {
 ///
 /// Works exactly as `assert_matrix_eq`, except that instead of causing a panic,
 /// it returns an error compatible with property-based tests from the `proptest` crate.
+///
+/// Requires the `proptest-support` feature to be enabled.
 #[macro_export]
 macro_rules! prop_assert_matrix_eq {
     ($($args:tt)*) => {
@@ -33,6 +35,8 @@ macro_rules! prop_assert_matrix_eq {
 ///
 /// Works exactly as `assert_scalar_eq`, except that instead of causing a panic,
 /// it returns an error compatible with property-based tests from the `proptest` crate.
+///
+/// Requires the `proptest-support` feature to be enabled.
 #[macro_export]
 macro_rules! prop_assert_scalar_eq {
     ($($args:tt)*) => {
