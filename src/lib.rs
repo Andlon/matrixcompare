@@ -33,8 +33,7 @@ The mismatched elements are listed below, in the format
 Comparison criterion: absolute difference, |x - y| <= 0.00000001.
 ```
 
-See the documentation for the [assert_matrix_eq!](macro.assert_matrix_eq.html) macro for more
-information.
+See the documentation for the [assert_matrix_eq!] macro for more information.
 
 ## Design and integration with linear algebra libraries
 
@@ -62,8 +61,8 @@ other than that the asymptotic complexity is roughly the same as a more optimize
 `proptest` ships its own macros for use with its tests. Although it's possible to directly
 use `assert_matrix_eq!` from `matrixcompare` in proptests, every failing test will result in a
 panic message being written to the error output, which causes unnecessary noise when debugging
-a failing test. To overcome this situation, we provide the macro `prop_assert_matrix_eq!`, which
-works exactly as `assert_matrix_eq!`, except that instead of panicing, it returns errors compatible
+a failing test. To overcome this situation, we provide the macro [prop_assert_matrix_eq!], which
+works exactly as [assert_matrix_eq!], except that instead of panicing, it returns errors compatible
 with `proptest`.
 
 To use this feature, the `proptest-support` feature must be enabled. See also the `proptest`

@@ -25,12 +25,11 @@ pub enum UlpComparisonResult {
 /// their integer representations are also adjacent.
 ///
 /// A somewhat accessible (but not exhaustive) guide on the topic is available in the popular article
-/// [Comparing Floating Point Numbers, 2012 Edition]
-/// (https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+/// [Comparing Floating Point Numbers, 2012 Edition](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 ///
 /// Implementations for `f32` and `f64` are already available, and so users should not normally
 /// need to implement this. In the case when a custom implementation is necessary,
-/// please see the possible return values for [UlpComparisonResult](enum.UlpComparisonResult.html).
+/// please see the possible return values for [UlpComparisonResult].
 /// Otherwise, we can recommend to read the source code of the included `f32` and `f64` implementations.
 pub trait Ulp {
     /// Returns the difference between two floating point numbers, measured in ULP.

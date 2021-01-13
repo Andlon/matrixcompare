@@ -198,7 +198,7 @@ Please see the documentation for ways to compare matrices approximately.\n",
 /// The error in many mathematical functions can often be bounded by a certain number of ULP, and so
 /// this comparator is particularly useful if this number is known.
 ///
-/// Note that the scalar type of the matrix must implement the [Ulp trait](ulp/trait.Ulp.html) in order
+/// Note that the scalar type of the matrix must implement the [Ulp trait](crate::ulp::Ulp) in order
 /// to be used with this comparator. By default, `f32` and `f64` implementations are provided.
 ///
 /// # Error reporting
@@ -235,7 +235,7 @@ Please see the documentation for ways to compare matrices approximately.\n",
 /// Each comparator has specific requirements on which traits the elements
 /// need to implement. To discover which traits are required for each comparator,
 /// we refer the reader to implementors of
-/// [ElementwiseComparator](comparators/trait.ElementwiseComparator.html),
+/// [ElementwiseComparator](crate::comparators::ElementwiseComparator),
 /// which provides the underlying comparison for the various macro invocations.
 ///
 /// # Examples
@@ -355,7 +355,7 @@ Please see the documentation for ways to compare scalars approximately.\n",
 
 /// Compare scalars for exact or approximate equality.
 ///
-/// This macro works analogously to [assert_matrix_eq!](macro.assert_matrix_eq.html),
+/// This macro works analogously to [assert_matrix_eq!],
 /// but is used for comparing scalars (e.g. integers, floating-point numbers)
 /// rather than matrices. Please see the documentation for `assert_matrix_eq!`
 /// for details about issues that arise when comparing floating-point numbers,
