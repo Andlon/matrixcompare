@@ -1,4 +1,4 @@
-use matrixcompare::comparators::{ExactElementwiseComparator, AbsoluteElementwiseComparator};
+use matrixcompare::comparators::{AbsoluteElementwiseComparator, ExactElementwiseComparator};
 use matrixcompare::compare_matrices;
 use matrixcompare_mock::{mock_matrix, MockSparseMatrix};
 
@@ -32,7 +32,7 @@ fn mismatched_elements_abs_f64() {
     let a = mock_matrix![1.0, 2.0, 3.0; 4.0, 5.0, 6.0];
     let b = mock_matrix![1.0, 2.0, 9.0; 5.0, 4.0, 6.0];
 
-    let err = compare_matrices(&a, &b, &AbsoluteElementwiseComparator { tol: 1e-12} ).unwrap_err();
+    let err = compare_matrices(&a, &b, &AbsoluteElementwiseComparator { tol: 1e-12 }).unwrap_err();
     let err_string = err.to_string();
 
     println!("{}", err);

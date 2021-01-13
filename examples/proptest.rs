@@ -3,12 +3,12 @@
 #[cfg(test)]
 mod tests {
     use matrixcompare::{prop_assert_matrix_eq, prop_assert_scalar_eq};
-    use matrixcompare_mock::{MockDenseMatrix, dense_matrix_strategy};
+    use matrixcompare_mock::{dense_matrix_strategy, MockDenseMatrix};
     use proptest::prelude::*;
 
     #[cfg(test)]
-    fn matrix() -> impl Strategy<Value=MockDenseMatrix<f64>> {
-        dense_matrix_strategy(2..=5usize, 3..=5usize, 0.5 .. 1.5)
+    fn matrix() -> impl Strategy<Value = MockDenseMatrix<f64>> {
+        dense_matrix_strategy(2..=5usize, 3..=5usize, 0.5..1.5)
     }
 
     proptest! {

@@ -1,4 +1,3 @@
-
 /// Internal macro used for providing consistent macro arguments across several macros
 #[doc(hidden)]
 #[macro_export]

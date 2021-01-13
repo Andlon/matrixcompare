@@ -7,8 +7,13 @@
 #[doc(hidden)]
 macro_rules! build_proptest_message {
     ($failure:expr) => {
-        format!("Comparison failure at {}:{}. Error:\n {}", file!(), line!(), $failure);
-    }
+        format!(
+            "Comparison failure at {}:{}. Error:\n {}",
+            file!(),
+            line!(),
+            $failure
+        );
+    };
 }
 
 /// A version of `assert_matrix_eq` suitable for use in `proptest` property-based tests.
