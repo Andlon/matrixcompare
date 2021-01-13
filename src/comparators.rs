@@ -2,7 +2,7 @@
 
 use crate::ulp::{Ulp, UlpComparisonResult};
 
-use num_traits::{Float, Num};
+use num_traits::{float::FloatCore, Num};
 
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -163,7 +163,7 @@ pub struct FloatElementwiseComparator<T> {
 
 impl<T> FloatElementwiseComparator<T>
 where
-    T: Float + Ulp,
+    T: FloatCore + Ulp,
 {
     pub fn default() -> Self {
         let four = T::one() + T::one() + T::one() + T::one();
@@ -192,7 +192,7 @@ where
 
 impl<T> ElementwiseComparator<T> for FloatElementwiseComparator<T>
 where
-    T: Ulp + Float + Display,
+    T: Ulp + FloatCore + Display,
 {
     type Error = UlpError;
 
