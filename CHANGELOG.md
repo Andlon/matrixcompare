@@ -2,7 +2,15 @@
 
 Prominent changes for individual releases will be listed here.
 
-## 0.1.4 - 2020-01-13
+## 0.2.0 - (2020-01-13)
+
+### Changed
+
+- **Breaking**: The `Float` trait bound for the `Float` comparator was changed to `FloatCore`.
+  This was necessary to ensure that `matrixcompare` builds when the `std` feature of `num-traits`
+  is not enabled. See [issue #3](https://github.com/Andlon/matrixcompare/issues/3).
+
+## 0.1.4 - (2020-01-13)
 
 ### Added
 
