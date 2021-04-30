@@ -1,6 +1,6 @@
 [package]
 name = "matrixcompare"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["Andreas Longva"]
 edition = "2018"
 license = "MIT"
@@ -15,7 +15,7 @@ proptest-support = [ "proptest"]
 [dependencies]
 num-traits = { version = "0.2", default-features = false }
 matrixcompare-core = { path = "matrixcompare-core", version="0.1"}
-proptest = { version = "0.10", optional = true }
+proptest = { version = "1.0", optional = true }
 
 [dev-dependencies]
 quickcheck = "0.9"
