@@ -259,7 +259,7 @@ Please see the documentation for ways to compare matrices approximately.\n",
 #[macro_export]
 macro_rules! assert_matrix_eq {
     ($($args:tt)*) => {
-        $crate::base_matrix_eq!(|msg| panic!(msg), $($args)*);
+        $crate::base_matrix_eq!(|msg| panic!("{}", msg), $($args)*);
     };
 }
 
@@ -373,6 +373,6 @@ Please see the documentation for ways to compare scalars approximately.\n",
 #[macro_export]
 macro_rules! assert_scalar_eq {
     ($($args:tt)*) => {
-        $crate::base_scalar_eq!(|msg| panic!(msg), $($args)*);
+        $crate::base_scalar_eq!(|msg| panic!("{}", msg), $($args)*);
     };
 }
