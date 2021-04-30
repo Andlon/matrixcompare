@@ -2,6 +2,12 @@
 
 Prominent changes for individual releases will be listed here.
 
+## 0.2.1 - (2020-04-30)
+
+### Changed
+
+- Fixed a warning due to panic! being used without a format string. Thanks to Christopher Gundler for catching thisi.
+
 ## 0.2.0 - (2020-01-13)
 
 ### Changed
