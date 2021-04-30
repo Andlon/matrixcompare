@@ -2,6 +2,12 @@
 
 Prominent changes for individual releases will be listed here.
 
+## 0.3.0 - (2020-04-30)
+
+### Changed
+
+- **Breaking**: Updated `proptest` to version 1.0. This is an optional dependency, so if you were not using it (through the `proptest-support` feature, there are no breaking changes.
+
 ## 0.2.1 - (2020-04-30)
 
 ### Changed
