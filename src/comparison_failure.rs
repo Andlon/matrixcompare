@@ -1,5 +1,9 @@
+use crate::alloc::string::ToString;
+use alloc::string::String;
+use alloc::vec::Vec;
 use core::fmt;
-use std::fmt::{Display, Formatter};
+use core::fmt::Write;
+use core::fmt::{Display, Formatter};
 
 const MAX_MISMATCH_REPORTS: usize = 12;
 
@@ -29,7 +33,8 @@ where
 
         // Write the error into a string first, so that we can add a space between
         // the element output and the error output only if there is something to report.
-        let error = format!("{}", self.error);
+        let mut error = String::new();
+        write!(error, "{}", self.error)?;
         if !error.is_empty() {
             write!(f, " {}", self.error)?;
         }
@@ -96,10 +101,13 @@ where
         // TODO: Write directly to formatter
         let overflow_msg = if mismatches_overflow {
             let num_hidden_entries = self.mismatches.len() - MAX_MISMATCH_REPORTS;
-            format!(
+            let mut msg = String::new();
+            write!(
+                msg,
                 " ... ({} mismatching elements not shown)\n",
                 num_hidden_entries
-            )
+            )?;
+            msg
         } else {
             String::new()
         };
@@ -139,6 +147,7 @@ pub enum MatrixComparisonFailure<T, Error> {
     DuplicateSparseEntry(Entry),
 }
 
+#[cfg(feature = "std")]
 impl<T, E> std::error::Error for MatrixComparisonFailure<T, E>
 where
     T: fmt::Debug + Display,

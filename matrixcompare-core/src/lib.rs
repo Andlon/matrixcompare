@@ -1,3 +1,7 @@
+#![no_std]
+extern crate alloc;
+use alloc::vec::Vec;
+
 /// Defines how the elements of a matrix may be accessed.
 pub enum Access<'a, T> {
     Dense(&'a dyn DenseAccess<T>),
@@ -28,8 +32,8 @@ pub trait SparseAccess<T>: Matrix<T> {
 }
 
 impl<T, X> Matrix<T> for &X
-    where
-        X: Matrix<T>,
+where
+    X: Matrix<T>,
 {
     fn rows(&self) -> usize {
         X::rows(*self)
@@ -45,8 +49,8 @@ impl<T, X> Matrix<T> for &X
 }
 
 impl<T, X> DenseAccess<T> for &X
-    where
-        X: DenseAccess<T>,
+where
+    X: DenseAccess<T>,
 {
     fn fetch_single(&self, row: usize, col: usize) -> T {
         X::fetch_single(*self, row, col)
@@ -54,8 +58,8 @@ impl<T, X> DenseAccess<T> for &X
 }
 
 impl<T, X> SparseAccess<T> for &X
-    where
-        X: SparseAccess<T>,
+where
+    X: SparseAccess<T>,
 {
     fn nnz(&self) -> usize {
         X::nnz(*self)
