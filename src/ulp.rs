@@ -1,5 +1,6 @@
 //! Tools for ULP-based comparison of floating point numbers.
-use std::mem;
+use crate::alloc::borrow::ToOwned;
+use core::mem;
 
 /// Represents the result of an ULP-based comparison between two floating point numbers.
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -67,9 +68,9 @@ impl_float_ulp!(f64, i64);
 mod tests {
     use super::Ulp;
     use super::UlpComparisonResult;
+    use core::mem;
+    use core::{f32, f64};
     use quickcheck::TestResult;
-    use std::mem;
-    use std::{f32, f64};
 
     #[test]
     fn plus_minus_zero_is_exact_match_f32() {

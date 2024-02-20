@@ -1,11 +1,14 @@
 //! Comparators used for element-wise comparison of matrix entries.
 
+use crate::alloc::string::ToString;
 use crate::ulp::{Ulp, UlpComparisonResult};
+use core::fmt::Write;
 
 use num_traits::{float::FloatCore, Num};
 
-use std::fmt;
-use std::fmt::{Display, Formatter};
+use alloc::string::String;
+use core::fmt;
+use core::fmt::{Display, Formatter};
 
 /// Trait that describes elementwise comparators for [assert_matrix_eq!](../macro.assert_matrix_eq!.html).
 ///
@@ -72,7 +75,14 @@ where
     }
 
     fn description(&self) -> String {
-        format!("absolute difference, |x - y| <= {tol}.", tol = self.tol)
+        let mut out = String::new();
+        write!(
+            out,
+            "absolute difference, |x - y| <= {tol}.",
+            tol = self.tol
+        )
+        .unwrap();
+        out
     }
 }
 
@@ -147,10 +157,14 @@ where
     }
 
     fn description(&self) -> String {
-        format!(
+        let mut out = String::new();
+        write!(
+            out,
             "ULP difference less than or equal to {tol}. See documentation for details.",
             tol = self.tol
         )
+        .unwrap();
+        out
     }
 }
 
@@ -208,7 +222,9 @@ where
     }
 
     fn description(&self) -> String {
-        format!(
+        let mut out = String::new();
+        write!(
+            out,
             "Epsilon-sized absolute comparison, followed by an ULP-based comparison.
 Please see the documentation for details.
 Epsilon:       {eps}
@@ -216,6 +232,8 @@ ULP tolerance: {ulp}",
             eps = self.abs.tol,
             ulp = self.ulp.tol
         )
+        .unwrap();
+        out
     }
 }
 
@@ -227,12 +245,12 @@ mod tests {
         UlpElementwiseComparator, UlpError,
     };
     use crate::ulp::{Ulp, UlpComparisonResult};
+    use core::f64;
     use quickcheck::TestResult;
-    use std::f64;
 
     /// Returns the next adjacent floating point number (in the direction of positive infinity)
     fn next_f64(x: f64) -> f64 {
-        use std::mem;
+        use core::mem;
         let as_int = unsafe { mem::transmute::<f64, i64>(x) };
         unsafe { mem::transmute::<i64, f64>(as_int + 1) }
     }

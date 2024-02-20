@@ -71,6 +71,7 @@ example in the repository.
 */
 
 #![allow(clippy::float_cmp)]
+#![no_std]
 
 #[macro_use]
 mod matrix_comparison;
@@ -83,6 +84,7 @@ mod comparison_failure;
 #[cfg(test)]
 #[macro_use]
 extern crate quickcheck;
+extern crate alloc;
 
 pub mod comparators;
 mod macros;

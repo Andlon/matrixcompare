@@ -3,8 +3,9 @@ use crate::{
     Access, Coordinate, DenseAccess, DimensionMismatch, ElementsMismatch, Matrix,
     MatrixComparisonFailure, MatrixElementComparisonFailure, SparseAccess,
 };
+use alloc::vec::Vec;
+use hashbrown::{HashMap, HashSet};
 use num_traits::Zero;
-use std::collections::{HashMap, HashSet};
 
 use crate::Entry;
 
@@ -26,7 +27,8 @@ where
     for (i, j, v) in triplets.iter().cloned() {
         if i >= rows || j >= cols {
             return Err(HashMapBuildError::OutOfBoundsCoord((i, j)));
-        } else if matrix.insert((i, j), v).is_some() {
+        }
+        if matrix.insert((i, j), v).is_some() {
             return Err(HashMapBuildError::DuplicateCoord((i, j)));
         }
     }
@@ -71,7 +73,7 @@ where
     let right_keys: HashSet<_> = right_hash.keys().collect();
     let zero = T::zero();
 
-    for coord in left_keys.union(&right_keys) {
+    for &coord in left_keys.union(&right_keys) {
         let a = left_hash.get(coord).unwrap_or(&zero);
         let b = right_hash.get(coord).unwrap_or(&zero);
         if let Err(error) = comparator.compare(&a, &b) {

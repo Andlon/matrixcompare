@@ -10,12 +10,15 @@ description = "Tools for convenient comparison of matrices"
 readme = "README.md"
 
 [features]
+default = ["std"]
+std = []
 proptest-support = [ "proptest"]
 
 [dependencies]
 num-traits = { version = "0.2", default-features = false }
 matrixcompare-core = { path = "matrixcompare-core", version="0.1"}
-proptest = { version = "1.0", optional = true }
+proptest = { version = "1.0", optional = true, default-features = false }
+hashbrown = "0.14.3"
 
 [dev-dependencies]
 quickcheck = "0.9"
